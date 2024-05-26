@@ -1,15 +1,16 @@
-import { html, LitElement } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
+import { html, LitElement } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
+import { componentStyles } from './kit-button.styles';
 
-export type ButtonVariant =
-	| 'primary'
-	| 'secondary'
-	| 'transparent';
+import type { CSSResultGroup } from 'lit';
+
+export type ButtonVariant = 'primary' | 'secondary' | 'transparent';
 
 export type ButtonSize = 'small' | 'medium' | 'large';
 
 @customElement('kit-button')
 export default class KitButton extends LitElement {
+	static styles: CSSResultGroup = componentStyles;
 
 	@query('button')
 	private _button!: HTMLButtonElement;
@@ -38,4 +39,3 @@ export default class KitButton extends LitElement {
 		`;
 	}
 }
-
