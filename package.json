@@ -13,18 +13,8 @@
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsc && wtr",
     "watch": "node ./scripts/watch.js"
-  },
-  "eslintConfig": {
-    "extends": [
-      "@open-wc/eslint-config"
-    ]
-  },
-  "prettier": {
-    "singleQuote": true,
-    "useTabs": true,
-    "tabWidth": 4
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -38,12 +28,17 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^1.4.0",
     "@eslint/js": "^9.3.0",
+    "@esm-bundle/chai": "^4.3.4",
+    "@open-wc/testing": "^3.0.0-next.5",
     "@storybook/addon-essentials": "^8.1.1",
     "@storybook/addon-links": "^8.1.1",
     "@storybook/blocks": "^8.1.1",
     "@storybook/test": "^8.1.1",
     "@storybook/web-components": "^8.1.1",
     "@storybook/web-components-vite": "^8.1.1",
+    "@types/mocha": "^10.0.6",
+    "@web/test-runner": "^0.18.2",
+    "@web/test-runner-playwright": "^0.11.0",
     "cssnano": "^7.0.1",
     "esbuild": "0.21.3",
     "eslint": "^8.57.0",

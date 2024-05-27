@@ -15,8 +15,10 @@
     "inlineSources": true,
     "rootDir": "./",
     "declaration": true,
-    "incremental": true
+    "incremental": true,
+    "skipLibCheck": true // Needed this to avoid chai error  https://github.com/vitest-dev/vitest/issues/4688#issuecomment-2043191486
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
 

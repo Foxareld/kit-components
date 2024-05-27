@@ -19,10 +19,7 @@ export default class KitButton extends LitElement {
 	disabled = false;
 
 	@property({ type: String, reflect: true })
-	size: 'small' | 'normal' | 'large' = 'normal';
-
-	@property({ type: String })
-	type: 'button' | 'submit' | 'reset' = 'button';
+	size: ButtonSize = 'medium';
 
 	@property({ type: String, reflect: true })
 	variant: ButtonVariant = 'primary';
@@ -33,9 +30,15 @@ export default class KitButton extends LitElement {
 
 	render() {
 		return html`
-			<button>
+			<button ?disabled=${this.disabled}>
 				<slot></slot>
 			</button>
 		`;
+	}
+}
+
+declare global {
+	interface HTMLElementTagNameMap {
+		'kit-button': KitButton;
 	}
 }

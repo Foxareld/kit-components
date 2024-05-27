@@ -31,5 +31,7 @@ export default meta;
 type Story = StoryObj;
 
 export const Button: Story = {
-	render: (args) => html`<kit-button  @click=${action('clicked')}>Click me</kit-button>`,
-} 
+	render: () =>
+		html`<kit-button @click=${action('clicked')}>Click me</kit-button
+			><button>Vanilla</button>`,
+};
