@@ -32,6 +32,5 @@ type Story = StoryObj;
 
 export const Button: Story = {
 	render: () =>
-		html`<kit-button @click=${action('clicked')}>Click me</kit-button
-			><button>Vanilla</button>`,
+		html`<kit-button @click=${action('clicked')}>Click me</kit-button>`,
 };

@@ -1,0 +1,8 @@
+:host {
+	background-color: var(--neutral-0);
+	border-radius: var(--corner-m);
+	box-shadow: var(--shadow-m);
+	display: block;
+	overflow: auto;
+	padding: var(--kit-space-100) 0;
+}

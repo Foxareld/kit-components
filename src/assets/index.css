@@ -1,0 +1,105 @@
+:root {
+
+	/* Primary */
+	--primary-900: #2a1609;
+	--primary-775: #56250a;
+	--primary-675: #81360d;
+	--primary-550: #ac4a15;
+	--primary-450: #e96721;
+	--primary-325: #f58145;
+	--primary-225: #f7b18e;
+	--primary-100: #f8dccf;
+
+	/* Putty */
+	--putty-900: #1f1b14;
+	--putty-775: #3b3220;
+	--putty-675: #584c30;
+	--putty-550: #776743;
+	--putty-450: #968256;
+	--putty-325: #b8a06a;
+	--putty-225: #ddc183;
+	--putty-100: #efe1c4;
+
+	/* Neutral */
+	--neutral-900: #010101;
+	--neutral-775: #343434;
+	--neutral-675: #4e4e4e;
+	--neutral-550: #696969;
+	--neutral-450: #858585;
+	--neutral-325: #a3a3a3;
+	--neutral-225: #c2c2c2;
+	--neutral-100: #e2e2e2;
+
+	/* Success */
+	--success-900: #181e07;
+	--success-775: #283905;
+	--success-675: #3d5507;
+	--success-550: #53730d;
+	--success-450: #6a9114;
+	--success-325: #82b11b;
+	--success-225: #9fd52a;
+	--success-100: #bef34e;
+
+	/* Caution */
+	--caution-900: #211b0a;
+	--caution-775: #3f320d;
+	--caution-675: #5e4b12;
+	--caution-550: #7f651c;
+	--caution-450: #a08026;
+	--caution-325: #c39d30;
+	--caution-225: #e9bd40;
+	--caution-100: #f9dfa8;
+
+	/* Danger */
+	--danger-900: #39090c;
+	--danger-775: #670d1c;
+	--danger-675: #97142c;
+	--danger-550: #c91f3e;
+	--danger-450: #f6284e;
+	--danger-325: #f97c7e;
+	--danger-225: #faaeac;
+	--danger-100: #f9dbda;
+
+	/* Info */
+	--info-900: #061e2b;
+	--info-775: #06384f;
+	--info-675: #075474;
+	--info-550: #0c729c;
+	--info-450: #1290c3;
+	--info-325: #16a2db;
+	--info-225: #7ccdfc;
+	--info-100: #cbe7fb;
+
+	/* Copper */
+	--copper-900: #26180e;
+	--copper-775: #4b2b15;
+	--copper-675: #71411e;
+	--copper-550: #97592b;
+	--copper-450: #b36a35;
+	--copper-325: #e78b47;
+	--copper-225: #eeb690;
+	--copper-100: #f4ded0;
+
+	--kt-corner-s: 0.125rem;
+	--kt-corner-m: 0.25rem;
+	--kt-corner-l: 0.5rem;
+
+	--kt-space-0: 0;
+	--kt-space-100: 0.25rem;
+	--kt-space-200: 0.5rem;
+	--kt-space-300: 0.75rem;
+	--kt-space-400: 1rem;
+
+	/* SHADOWS */
+	--shadow-color-1: rgba(14, 31, 53, 0.04);
+	--shadow-color-2: rgba(14, 31, 53, 0.08);
+	--shadow-color-3: rgba(14, 31, 53, 0.12);
+	--shadow-color-4: rgba(14, 31, 53, 0.16);
+	--shadow-xs: 0px 1px 2px 0px var(--shadow-color-2);
+	--shadow-s: 0px 4px 4px -1px var(--shadow-color-1),
+		0px 2px 4px 0 var(--shadow-color-2);
+	--shadow-m: 0px 4px 8px 0px var(--shadow-color-1),
+		0px 4px 6px 0px var(--shadow-color-3);
+	--shadow-l: 0px 8px 12px 0px var(--shadow-color-1),
+		0px 6px 8px 0px var(--shadow-color-4);
+}

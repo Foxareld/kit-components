@@ -1,3 +1,35 @@
 :host {
+	cursor: pointer;
 	display: inline-block;
+}
+
+button {
+	background-color: var(--primary-450);
+	border-radius: var(--kt-corner-m);
+	color: var(--neutral-900);
+	cursor: pointer;
+	padding: var(--kt-space-100) var(--kt-space-200);
+
+	&:hover {
+		background-color: var(--primary-325);
+	}
+}
+
+/* GROUP BUTTONS */
+:host(.grouped-button.first) button {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+:host(.grouped-button:not(.first):not(.last)) button {
+	border-radius: 0;
+}
+
+:host(.grouped-button:not(.first)) button {
+	border-left: 1px solid var(--neutral-0);
+}
+
+:host(.grouped-button.last) button {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }
