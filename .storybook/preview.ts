@@ -1,5 +1,10 @@
 import '../src/assets/index.css';
 import type { Preview } from '@storybook/web-components';
+import { setCustomElementsManifest } from '@storybook/web-components';
+
+import customElementsManifest from '../custom-elements.json';
+
+setCustomElementsManifest(customElementsManifest);
 
 const preview: Preview = {
 	parameters: {
@@ -10,6 +15,8 @@ const preview: Preview = {
 			},
 		},
 	},
+
+	tags: ['autodocs'],
 };
 
 export default preview;

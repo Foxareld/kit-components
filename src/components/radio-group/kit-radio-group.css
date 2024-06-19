@@ -1,0 +1,37 @@
+:host {
+	font-family: var(--font-primary);
+	font-weight: 300;
+}
+
+:host([layout='horizontal']) {
+	::slotted(:not(*:first-of-type)) {
+		margin-left: var(--kt-space-400);
+	}
+}
+
+:host([layout='vertical']) {
+	::slotted(:not(*:first-of-type)) {
+		margin-top: var(--kt-space-200);
+	}
+
+	::slotted(fs-radio) {
+		display: block;
+	}
+}
+
+.radio-container {
+	margin-top: var(--kt-space-100);
+}
+
+.req-star {
+	color: var(--danger-450);
+}
+
+#hint {
+	margin-top: var(--kt-space-100);
+
+	::slotted(*) {
+		color: var(--neutral-450);
+		font-size: var(--font-size-sm);
+	}
+}

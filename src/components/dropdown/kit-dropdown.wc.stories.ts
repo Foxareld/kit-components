@@ -6,7 +6,7 @@ import './kit-dropdown';
 import '../menu';
 import '../menu-item';
 import '../button';
-import '../icon-button';
+// import '../icon-button';
 
 const meta: Meta = {
 	title: 'Dropdown',

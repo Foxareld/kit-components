@@ -3,3 +3,5 @@
 node_modules
 dist
 *.styles.ts
+
+custom-elements.json

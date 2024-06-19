@@ -1,0 +1,47 @@
+svg {
+	width: 24px;
+}
+
+:host([size="small"]) svg {
+	width: 16px;
+}
+
+:host([size="medium"]) svg {
+	width: 20px;
+}
+
+:host([size="large"]) svg {
+	width: 32px;
+}
+
+:host([color="white"]) svg {
+	fill: #ffffff;
+}
+
+:host([color="black"]) svg {
+	fill: #000000;
+}
+
+:host([color="default"]) svg {
+	fill: var(--neutral-900);
+}
+
+:host([color="success"]) svg {
+	fill: var(--success-450);
+}
+
+:host([color="warning"]) svg {
+	fill: var(--warning-225);
+}
+
+:host([color="danger"]) svg {
+	fill: var(--danger-450);
+}
+
+:host([color="info"]) svg {
+	fill: var(--info-450);
+}
+
+:host([color="disabled"]) svg {
+	fill: var(--neutral-450);
+}

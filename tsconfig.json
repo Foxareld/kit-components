@@ -19,7 +19,7 @@
     "strict": true,
     "skipLibCheck": true // Needed this to avoid chai error  https://github.com/vitest-dev/vitest/issues/4688#issuecomment-2043191486
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "src/components/button/KitButton.stories.jsx"],
   "exclude": ["node_modules", "dist"]
 }
 

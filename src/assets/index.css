@@ -102,4 +102,6 @@
 		0px 4px 6px 0px var(--shadow-color-3);
 	--shadow-l: 0px 8px 12px 0px var(--shadow-color-1),
 		0px 6px 8px 0px var(--shadow-color-4);
+
+	--transition-duration: 0.3s;
 }

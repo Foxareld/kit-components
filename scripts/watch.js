@@ -54,13 +54,13 @@ chokidar
  * Watch for style changes in component TS files
  * Build custom-elements manifest when change detected
  */
-// chokidar
-// 	.watch('./src/components/**/*.ts', {
-// 		ignored: /(^|[\/\\])[^.]+\.css\.ts$/, // ignore files ending with .css.ts
-// 	})
-// 	.on('change', (path) => {
-// 		console.log(`Component change detected in ${path}; Updating Manifest`);
-// 		exec(`npm run analyze`);
-// 	});
+chokidar
+	.watch('./src/components/**/*.ts', {
+		ignored: /(^|[\/\\])[^.]+\.css\.ts$/, // ignore files ending with .css.ts
+	})
+	.on('change', (path) => {
+		console.log(`Component change detected in ${path}; Updating Manifest`);
+		exec(`npm run analyze`);
+	});
 
 console.log('Watching for changes...');
