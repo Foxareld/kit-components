@@ -1,0 +1,13 @@
+{
+	"html.customData": [".vscode/html-custom-data.json"],
+	"files.associations": {
+		"*.ts": "typescript"
+	},
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "explicit",
+		"source.organizeImports": "explicit"
+	},
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.preferences.importModuleSpecifier": "relative"
+}

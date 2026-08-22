@@ -1,0 +1,32 @@
+# Don't include source files in npm package
+src/
+scripts/
+.storybook/
+
+# Don't include test files
+**/*.test.ts
+**/*.spec.ts
+**/*.test.js
+**/*.spec.js
+
+# Don't include stories
+**/*.stories.ts
+**/*.stories.js
+
+# Don't include config files
+tsconfig.json
+tsconfig.prod.json
+web-test-runner.config.js
+custom-elements-manifest.config.js
+postcss.config.js
+
+# Don't include build artifacts
+*.tsbuildinfo
+storybook-static/
+coverage/
+
+# Don't include dev files
+.vscode/
+.github/
+.git/
+.gitignore

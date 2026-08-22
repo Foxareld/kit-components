@@ -1,0 +1,84 @@
+{
+	"name": "@yourorg/kit",
+	"version": "0.1.0",
+	"description": "A Lit-based web component library",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./components/*": {
+			"types": "./dist/components/*/index.d.ts",
+			"default": "./dist/components/*/index.js"
+		},
+		"./utilities/*": {
+			"types": "./dist/utilities/*.d.ts",
+			"default": "./dist/utilities/*.js"
+		},
+		"./themes/*": {
+			"types": "./dist/themes/*.d.ts",
+			"default": "./dist/themes/*.js"
+		}
+	},
+	"files": [
+		"dist",
+		"custom-elements.json"
+	],
+	"customElements": "custom-elements.json",
+	"scripts": {
+		"build": "npm run clean && npm run build:styles && npm run build:ts && npm run build:metadata",
+		"build:styles": "node scripts/build-styles.mjs",
+		"build:ts": "node scripts/build.mjs",
+		"build:metadata": "cem analyze --litelement",
+		"clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+		"dev": "npm run storybook",
+		"dev:styles": "npm run build:styles && npm run watch:styles",
+		"watch:styles": "node scripts/watch-styles.mjs",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build",
+		"test": "web-test-runner",
+		"test:watch": "web-test-runner --watch",
+		"test:coverage": "web-test-runner --coverage"
+	},
+	"keywords": [
+		"web-components",
+		"lit",
+		"component-library",
+		"custom-elements"
+	],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"lit": "^3.2.1"
+	},
+	"devDependencies": {
+		"@chromatic-com/storybook": "^5.1.2",
+		"@custom-elements-manifest/analyzer": "^0.11.0",
+		"@open-wc/testing": "^4.0.0",
+		"@storybook/addon-a11y": "^10.3.6",
+		"@storybook/addon-docs": "^10.3.6",
+		"@storybook/addon-vitest": "^10.3.6",
+		"@storybook/web-components-vite": "^10.3.6",
+		"@vitest/browser-playwright": "^4.1.6",
+		"@vitest/coverage-v8": "^4.1.6",
+		"@web/dev-server-esbuild": "^1.0.2",
+		"@web/test-runner": "^0.19.0",
+		"@web/test-runner-playwright": "^0.11.0",
+		"autoprefixer": "^10.4.20",
+		"chokidar": "^4.0.1",
+		"cssnano": "^7.0.6",
+		"esbuild": "^0.24.0",
+		"glob": "^13.0.6",
+		"npm-run-all": "^4.1.5",
+		"playwright": "^1.60.0",
+		"postcss": "^8.4.47",
+		"postcss-preset-env": "^10.1.1",
+		"storybook": "^10.3.6",
+		"typescript": "^5.6.3",
+		"vitest": "^4.1.6"
+	}
+}

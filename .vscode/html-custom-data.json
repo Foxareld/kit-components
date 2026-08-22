@@ -1,0 +1,48 @@
+{
+	"version": 1.1,
+	"tags": [
+		{
+			"name": "kit-button",
+			"description": "A customizable button component built with Lit",
+			"attributes": [
+				{
+					"name": "variant",
+					"description": "The visual style variant of the button",
+					"values": [
+						{ "name": "primary" },
+						{ "name": "secondary" },
+						{ "name": "ghost" }
+					]
+				},
+				{
+					"name": "size",
+					"description": "The size of the button",
+					"values": [
+						{ "name": "small" },
+						{ "name": "medium" },
+						{ "name": "large" }
+					]
+				},
+				{
+					"name": "disabled",
+					"description": "Whether the button is disabled",
+					"valueSet": "v"
+				},
+				{
+					"name": "full-width",
+					"description": "Whether the button should take full width of its container",
+					"valueSet": "v"
+				},
+				{
+					"name": "type",
+					"description": "The button type attribute",
+					"values": [
+						{ "name": "button" },
+						{ "name": "submit" },
+						{ "name": "reset" }
+					]
+				}
+			]
+		}
+	]
+}
