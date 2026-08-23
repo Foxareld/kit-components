@@ -52,3 +52,47 @@ export const disabledStyles = css`
 		opacity: 0.5;
 	}
 `;
+
+/**
+ * Base input styling
+ */
+export const baseInput = css`
+	.input-base {
+		background-color: var(--color-white);
+		border: 1px solid var(--color-border);
+		border-radius: var(--border-radius-md);
+		font-weight: 400;
+		height: var(--input-base-height);
+		padding: 7px var(--spacing-md);
+		transition: background-color var(--transition-base);
+		width: 100%;
+
+		&:focus {
+			outline: var(--outline);
+		}
+
+		&:hover {
+			background-color: #e4e7eb;
+		}
+
+		&:disabled,
+		&.disabled {
+			background-color: var(--color-white);
+			color: var(--color-text-secondary);
+			cursor: not-allowed;
+		}
+
+		&.input-error {
+			border-color: var(--color-danger);
+		}
+
+		&::placeholder {
+			color: var(--color-text-secondary);
+			font-weight: 400;
+		}
+
+		&.input-no-border {
+			border-color: transparent;
+		}
+	}
+`;

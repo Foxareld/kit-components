@@ -11,6 +11,9 @@ dist/
 # Generated style files (built from .css)
 **/*.styles.ts
 
+# Generated icon registry (built from SVGs)
+src/assets/icons/icon-registry.ts
+
 # Testing
 coverage/
 

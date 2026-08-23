@@ -22,7 +22,7 @@ describe('KitButton', () => {
 
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button).to.exist;
-		expect(button?.textContent?.trim()).to.equal('Test Button');
+		expect(el.textContent?.trim()).to.equal('Test Button');
 	});
 
 	it('applies variant classes correctly', async () => {

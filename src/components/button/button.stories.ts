@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { expect, fn } from 'storybook/test';
 import './button.component.js';
 
 /**
@@ -41,6 +42,7 @@ const meta: Meta = {
 		disabled: false,
 		fullWidth: false,
 		type: 'button',
+		onClick: fn(),
 	},
 };
 
@@ -50,29 +52,20 @@ type Story = StoryObj;
 export const Primary: Story = {
 	render: (args) => html`
 		<kit-button
+			data-testid="kit-button"
 			variant=${args.variant}
 			size=${args.size}
 			?disabled=${args.disabled}
 			?full-width=${args.fullWidth}
 			type=${args.type}
+			@click=${args.onClick}
 		>
 			Primary Button
 		</kit-button>
 	`,
-};
+	play: async ({ args, canvas, userEvent }) => {
+		await userEvent.click(canvas.getByTestId('kit-button'));
 
-export const FullWidth: Story = {
-	render: () => html`
-		<div style="width: 300px;">
-			<kit-button full-width>Full Width Button</kit-button>
-		</div>
-	`,
-};
-
-export const WithClickHandler: Story = {
-	render: () => html`
-		<kit-button @click=${() => console.log('Button clicked!')}>
-			Click Me
-		</kit-button>
-	`,
+		await expect(args.onClick).toHaveBeenCalled();
+	},
 };

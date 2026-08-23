@@ -13,7 +13,7 @@ console.log('Project root:', projectRoot);
 
 // Use glob to find all CSS files (** pattern works better with glob than chokidar polling)
 const cssPattern = path
-	.join(projectRoot, 'src', 'components', '**', '*.css')
+	.join(projectRoot, 'src', '**', '*.css')
 	.replace(/\\/g, '/');
 console.log('Finding CSS files with pattern:', cssPattern);
 

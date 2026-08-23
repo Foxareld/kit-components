@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { KitElement } from '../../base/KitElement.js';
 import { buttonStyles } from './button.styles.js';
 
@@ -13,7 +14,9 @@ import { buttonStyles } from './button.styles.js';
  */
 @customElement('kit-button')
 export class KitButton extends KitElement {
-	static styles = buttonStyles; // baseStyles automatically included!
+	static styles = buttonStyles;
+
+	private _internals!: ElementInternals;
 
 	/**
 	 * The visual style variant of the button
@@ -46,19 +49,15 @@ export class KitButton extends KitElement {
 	type: 'button' | 'submit' | 'reset' = 'button';
 
 	render() {
-		const classes = [
-			this.variant,
-			this.size,
-			this.fullWidth ? 'full-width' : '',
-		]
-			.filter(Boolean)
-			.join(' ');
-
 		return html`
 			<button
 				part="button"
 				type=${this.type}
-				class=${classes}
+				class=${classMap({
+					[this.variant]: true,
+					[this.size]: true,
+					'full-width': this.fullWidth,
+				})}
 				?disabled=${this.disabled}
 			>
 				<slot></slot>

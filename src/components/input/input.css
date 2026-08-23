@@ -1,0 +1,16 @@
+:host {
+	display: block;
+	box-sizing: border-box;
+}
+
+.default {
+	/* Add your default styles here */
+}
+
+.primary {
+	/* Add your primary variant styles here */
+}
+
+.secondary {
+	/* Add your secondary variant styles here */
+}
