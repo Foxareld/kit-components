@@ -7,6 +7,16 @@ import presetEnv from 'postcss-preset-env';
 // Define the directory path to search for CSS files
 const srcDirectory = './src/components';
 
+// Convert kebab-case to camelCase (e.g., text-input -> textInput)
+function toCamelCase(str) {
+	return str
+		.split('-')
+		.map((word, i) =>
+			i === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1),
+		)
+		.join('');
+}
+
 async function processCssFile(cssFilePath) {
 	try {
 		const cssFileContents = await fs.readFile(cssFilePath, 'utf-8');
@@ -35,9 +45,10 @@ async function processCssFile(cssFilePath) {
 
 		const resultingCSS = result.css;
 
-		// Generate export name from file name (e.g., button.css -> buttonStyles)
+		// Generate export name from file name (e.g., button.css -> buttonStyles,
+		// text-input.css -> textInputStyles)
 		const fileName = path.basename(cssFilePath, '.css');
-		const exportName = `${fileName}Styles`;
+		const exportName = `${toCamelCase(fileName)}Styles`;
 
 		// Lit CSS template with processed CSS
 		const template = `import { css } from 'lit';\n\nexport const ${exportName} = css\`${resultingCSS}\`;\n`;

@@ -32,7 +32,19 @@ function toPascalCase(str) {
 		.join('');
 }
 
+// Convert kebab-case to camelCase
+function toCamelCase(str) {
+	return str
+		.split('-')
+		.map((word, i) =>
+			i === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1),
+		)
+		.join('');
+}
+
 const pascalName = toPascalCase(componentName);
+const camelName = toCamelCase(componentName);
+const stylesExportName = `${camelName}Styles`;
 const componentDir = path.join(
 	__dirname,
 	'..',
@@ -52,9 +64,10 @@ fs.mkdirSync(componentDir, { recursive: true });
 
 // Template for component file
 const componentTemplate = `import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { KitElement } from '../../base/KitElement.js';
-import { ${componentName}Styles } from './${componentName}.styles.js';
+import { baseStyles } from '../../styles/utilities.js';
+import { ${stylesExportName} } from './${componentName}.styles.js';
 
 /**
  * ${pascalName} component
@@ -65,17 +78,11 @@ import { ${componentName}Styles } from './${componentName}.styles.js';
  */
 @customElement('kit-${componentName}')
 export class Kit${pascalName} extends KitElement {
-	static styles = ${componentName}Styles;
-
-	/**
-	 * Example property
-	 */
-	@property({ type: String })
-	variant: 'default' | 'primary' | 'secondary' = 'default';
+	static styles = [baseStyles, ${stylesExportName}];
 
 	render() {
 		return html\`
-			<div part="root" class="\${this.variant}">
+			<div part="root">
 				<slot></slot>
 			</div>
 		\`;
@@ -96,19 +103,6 @@ const indexTemplate = `export { Kit${pascalName} } from './${componentName}.comp
 // Template for CSS file
 const cssTemplate = `:host {
 	display: block;
-	box-sizing: border-box;
-}
-
-.default {
-	/* Add your default styles here */
-}
-
-.primary {
-	/* Add your primary variant styles here */
-}
-
-.secondary {
-	/* Add your secondary variant styles here */
 }
 `;
 
@@ -118,13 +112,12 @@ import './${componentName}.component.js';
 import { Kit${pascalName} } from './${componentName}.component.js';
 
 describe('Kit${pascalName}', () => {
-	it('renders with default properties', async () => {
+	it('renders', async () => {
 		const el = await fixture<Kit${pascalName}>(html\`
 			<kit-${componentName}>Content</kit-${componentName}>
 		\`);
 
 		expect(el).to.exist;
-		expect(el.variant).to.equal('default');
 	});
 
 	it('renders slotted content', async () => {
@@ -133,14 +126,6 @@ describe('Kit${pascalName}', () => {
 		\`);
 
 		expect(el.textContent?.trim()).to.equal('Test Content');
-	});
-
-	it('applies variant correctly', async () => {
-		const el = await fixture<Kit${pascalName}>(html\`
-			<kit-${componentName} variant="primary">Content</kit-${componentName}>
-		\`);
-
-		expect(el.variant).to.equal('primary');
 	});
 
 	it('is accessible', async () => {
@@ -165,48 +150,14 @@ const meta: Meta = {
 	title: 'Components/${pascalName}',
 	component: 'kit-${componentName}',
 	tags: ['autodocs'],
-	argTypes: {
-		variant: {
-			control: 'select',
-			options: ['default', 'primary', 'secondary'],
-			description: 'The visual style variant',
-		},
-	},
-	args: {
-		variant: 'default',
-	},
 };
 
 export default meta;
 type Story = StoryObj;
 
 export const Default: Story = {
-	render: (args) => html\`
-		<kit-${componentName} variant=\${args.variant}>
-			${pascalName} Content
-		</kit-${componentName}>
-	\`,
-};
-
-export const Primary: Story = {
-	args: {
-		variant: 'primary',
-	},
-	render: (args) => html\`
-		<kit-${componentName} variant=\${args.variant}>
-			Primary ${pascalName}
-		</kit-${componentName}>
-	\`,
-};
-
-export const Secondary: Story = {
-	args: {
-		variant: 'secondary',
-	},
-	render: (args) => html\`
-		<kit-${componentName} variant=\${args.variant}>
-			Secondary ${pascalName}
-		</kit-${componentName}>
+	render: () => html\`
+		<kit-${componentName}>${pascalName} Content</kit-${componentName}>
 	\`,
 };
 `;

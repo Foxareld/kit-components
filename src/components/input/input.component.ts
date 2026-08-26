@@ -2,7 +2,7 @@ import { html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KitElement } from '../../base/KitElement.js';
 import { inputStyles } from './input.styles.js';
-import { baseInput } from '../../styles/utilities.js';
+import { baseInput, baseStyles } from '../../styles/utilities.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -17,7 +17,7 @@ import { live } from 'lit/directives/live.js';
 @customElement('kit-input')
 export class KitInput extends KitElement {
 	static formAssociated = true;
-	static styles = [inputStyles, baseInput];
+	static styles = [baseStyles, inputStyles, baseInput];
 
 	private _internals: ElementInternals;
 

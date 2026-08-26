@@ -115,7 +115,7 @@ Run the watch script while developing:
 npm run watch:styles
 ```
 
-See [CSS Workflow Guide](docs/CSS_WORKFLOW.md) for details.
+See [CLAUDE.md](CLAUDE.md) for the full styling workflow.
 
 ### Project Structure
 
@@ -163,7 +163,7 @@ export class KitButton extends KitElement {
 - ✅ Single source of truth for common patterns
 - ✅ Industry standard pattern (Spectrum, Carbon, Shoelace)
 
-See [Creating Components Guide](docs/CREATING_COMPONENTS.md) for details.
+See [CLAUDE.md](CLAUDE.md) for conventions and benefits.
 
 ### Creating a New Component
 
@@ -218,7 +218,7 @@ export class KitMyComponent extends KitElement {
 npm run build:styles
 ```
 
-See [Component Creation Guide](docs/CREATING_COMPONENTS.md) for full details.
+See [CLAUDE.md](CLAUDE.md) for full details.
 expect(el).to.exist;
 });
 });

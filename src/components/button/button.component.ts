@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { KitElement } from '../../base/KitElement.js';
+import { baseStyles } from '../../styles/utilities.js';
 import { buttonStyles } from './button.styles.js';
 
 /**
@@ -14,7 +15,7 @@ import { buttonStyles } from './button.styles.js';
  */
 @customElement('kit-button')
 export class KitButton extends KitElement {
-	static styles = buttonStyles;
+	static styles = [baseStyles, buttonStyles];
 
 	private _internals!: ElementInternals;
 

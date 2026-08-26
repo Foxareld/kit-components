@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { getIcon, type IconName } from '../../assets/icons/icon-registry.js';
 import { KitElement } from '../../base/KitElement.js';
+import { baseStyles } from '../../styles/utilities.js';
 import { iconStyles } from './icon.styles.js';
 
 export type IconColor =
@@ -25,7 +26,7 @@ export type IconSize = 'small' | 'medium' | 'default' | 'large' | 'xlarge';
  */
 @customElement('kit-icon')
 export class KitIcon extends KitElement {
-	static styles = iconStyles;
+	static styles = [baseStyles, iconStyles];
 
 	/**
 	 * Icon name from the icon registry

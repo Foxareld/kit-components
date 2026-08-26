@@ -27,6 +27,13 @@ export const focusStyles = css`
 `;
 
 /**
+ * Styles every Kit component should include, regardless of type.
+ * Spread this first in a component's `static styles` array, e.g.
+ * `static styles = [baseStyles, buttonStyles];`
+ */
+export const baseStyles = [boxSizing, focusStyles];
+
+/**
  * Screen reader only utility
  */
 export const srOnly = css`
