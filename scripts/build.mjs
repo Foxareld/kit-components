@@ -1,46 +1,6 @@
-import autoprefixer from 'autoprefixer';
-import cssnano from 'cssnano';
 import * as esbuild from 'esbuild';
 import { readdir } from 'fs/promises';
 import { join } from 'path';
-import postcss from 'postcss';
-
-// PostCSS plugin for esbuild to process CSS in .styles.ts files
-const postcssPlugin = {
-	name: 'postcss',
-	setup(build) {
-		build.onLoad({ filter: /\.styles\.ts$/ }, async (args) => {
-			const fs = await import('fs/promises');
-			const contents = await fs.readFile(args.path, 'utf8');
-
-			// Extract CSS from css`...` template literals
-			const cssRegex = /css`([^`]*)`/gs;
-			let match;
-			let processedContents = contents;
-
-			while ((match = cssRegex.exec(contents)) !== null) {
-				const originalCSS = match[1];
-
-				// Process with PostCSS
-				const result = await postcss([
-					autoprefixer,
-					cssnano({ preset: 'default' }),
-				]).process(originalCSS, { from: undefined });
-
-				// Replace in the file
-				processedContents = processedContents.replace(
-					match[0],
-					`css\`${result.css}\``,
-				);
-			}
-
-			return {
-				contents: processedContents,
-				loader: 'ts',
-			};
-		});
-	},
-};
 
 // Get all component entry points
 async function getComponentEntries() {
@@ -76,7 +36,6 @@ async function build() {
 			splitting: true,
 			platform: 'browser',
 			packages: 'external', // Treat all node_modules packages as external
-			plugins: [postcssPlugin],
 			logLevel: 'info',
 			chunkNames: 'chunks/[name]-[hash]',
 		});
