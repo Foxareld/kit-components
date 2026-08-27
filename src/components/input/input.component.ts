@@ -101,7 +101,7 @@ export class KitInput extends KitElement {
 	render() {
 		return html`
 			<div id="labelContainer">
-				<label part="label" for=${this.name}>
+				<label part="label" for="input">
 					${this.label}
 					${this.required
 						? html`<span class="error-state">*</span>`
@@ -110,6 +110,7 @@ export class KitInput extends KitElement {
 			</div>
 			<div id="inputContainer">
 				<input
+					id="input"
 					part="input"
 					class=${classMap({
 						'input-base': true,
