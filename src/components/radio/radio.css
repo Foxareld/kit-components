@@ -1,0 +1,45 @@
+:host {
+	display: inline-block;
+	outline: none;
+}
+
+#input {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	cursor: pointer;
+}
+
+:host([disabled]) #input {
+	cursor: not-allowed;
+}
+
+#radio {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 16px;
+	height: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 50%;
+	transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+:host(:not([disabled]):hover) #radio {
+	border-color: var(--color-primary-hover);
+}
+
+:host([checked]) #radio {
+	border-color: var(--color-primary);
+	background-color: var(--color-primary);
+	box-shadow: 0 0 0 2px var(--color-white) inset;
+}
+
+:host([checked]:not([disabled]):hover) #radio {
+	border-color: var(--color-primary-hover);
+	background-color: var(--color-primary-hover);
+}
+
+:host(:focus-visible) #radio {
+	outline: var(--outline);
+	outline-offset: 2px;
+}

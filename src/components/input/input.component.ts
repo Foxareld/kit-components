@@ -1,6 +1,6 @@
 import { html, nothing, type PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { KitElement } from '../../base/KitElement.js';
+import { FormAssociatedElement } from '../../base/FormAssociatedElement.js';
 import { inputStyles } from './input.styles.js';
 import {
 	baseInput,
@@ -22,11 +22,9 @@ import type { IconName } from '../../assets/icons/icon-registry.js';
  * @csspart root - The root element
  */
 @customElement('kit-input')
-export class KitInput extends KitElement {
-	static formAssociated = true;
+export class KitInput extends FormAssociatedElement {
 	static styles = [baseStyles, inputStyles, baseInput, disabledStyles];
 
-	private _internals: ElementInternals;
 	private _defaultValue = '';
 	private _isInvalidSyncActive = false;
 
@@ -149,7 +147,6 @@ export class KitInput extends KitElement {
 
 	constructor() {
 		super();
-		this._internals = this.attachInternals();
 		this.addEventListener('invalid', this._handleInvalid);
 	}
 
@@ -294,20 +291,6 @@ export class KitInput extends KitElement {
 	}
 
 	/**
-	 * Checks the input's validity without showing the browser's UI.
-	 */
-	checkValidity(): boolean {
-		return this._internals.checkValidity();
-	}
-
-	/**
-	 * Checks the input's validity and shows the browser's validation UI if invalid.
-	 */
-	reportValidity(): boolean {
-		return this._internals.reportValidity();
-	}
-
-	/**
 	 * Moves focus to the input.
 	 */
 	focus(options?: FocusOptions) {
@@ -330,34 +313,6 @@ export class KitInput extends KitElement {
 		direction?: 'forward' | 'backward' | 'none'
 	) {
 		this._inputElement.setSelectionRange(start, end, direction);
-	}
-
-	/**
-	 * The input's current validity state.
-	 */
-	get validity(): ValidityState {
-		return this._internals.validity;
-	}
-
-	/**
-	 * The input's current validation message, if any.
-	 */
-	get validationMessage(): string {
-		return this._internals.validationMessage;
-	}
-
-	/**
-	 * Whether the input is a candidate for constraint validation.
-	 */
-	get willValidate(): boolean {
-		return this._internals.willValidate;
-	}
-
-	/**
-	 * The form this input is associated with, if any.
-	 */
-	get form(): HTMLFormElement | null {
-		return this._internals.form;
 	}
 
 	render() {
