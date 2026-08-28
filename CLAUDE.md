@@ -14,6 +14,21 @@ A Lit-based web component library (TypeScript, Shadow DOM, Storybook). This file
   - `index.ts` — re-exports the component
 - New components must be exported from `src/components/index.ts`, and declare their tag in `HTMLElementTagNameMap` (see any existing component for the pattern).
 
+### Form-associated components
+
+`kit-input` ([src/components/input/input.component.ts](src/components/input/input.component.ts)) is the reference implementation for any component that participates in a `<form>` (text-like inputs, select, checkbox, etc.). Follow its pattern:
+
+- `static formAssociated = true` + `this.attachInternals()` in the constructor.
+- Sync the value every update via `internals.setFormValue(this.value)` (in `updated()` is fine — it's not render-dependent).
+- Mirror the native `<input>`'s own `ValidityState`/`validationMessage` into `internals.setValidity(...)`, anchored to that native element. **Do this in `willUpdate()`, not `updated()`.** `willUpdate()` runs before render, so the same render cycle already reflects fresh validity; doing it in `updated()` means the state changed *after* render, so nothing visually updates until a second cycle — see the gotcha below.
+- For custom/business-rule errors, call the native `<input>`'s own `setCustomValidity(message)` rather than tracking a separate field. Its `ValidityState.customError` then becomes the single source of truth and survives the next native-validity mirror automatically.
+- Implement `formResetCallback()` (reset to the value captured in `connectedCallback`) so `form.reset()` works.
+- Any public method that mutates `ElementInternals`/the native input directly (`setCustomValidity`, a public `setValidity`, etc.) must end with `this.requestUpdate()`. Those calls don't touch a reactive `@property`/`@state`, so Lit has no way to know a re-render is needed — the change is real (`checkValidity()` reflects it immediately) but invisible in the DOM until something *else* happens to trigger a render. This bit us even after fixing the `willUpdate()` cascade issue below: it "worked" in isolated tests only because an unrelated property change happened to be triggering a render at the same time, and silently failed once a form actually called `setCustomValidity()` a second time with nothing else changing.
+- Render any "is this field invalid" UI as a **pure read** of `this.validity`/`this.validationMessage` at render time, not as a separately-cached reactive field that a validity check has to remember to clear.
+- Watch for string properties with an empty-string default (e.g. `pattern = ''`) bound straight to the matching native attribute (`pattern=${this.pattern}`). An empty attribute isn't "absent" to the browser — `pattern=""` means "match only the empty string," so every non-empty value fails validation. Bind with `ifDefined(this.pattern || undefined)` when empty should mean "not set."
+
+**Lit gotcha — don't mutate reactive state as a side effect inside `updated()`.** `el.updateComplete` only resolves for the update currently in flight; if `updated()` itself sets a property (`this._foo = x`), that schedules another update that `updateComplete` does *not* wait for (Lit calls this "change-in-update" and warns about it in dev mode). Code — including tests — that does a single `await el.updateComplete` will then observe stale DOM. This cost real debugging time on `kit-input` (it manifested as Web Test Runner hanging indefinitely, not just failing, because the cascade combined badly with mocha's fixture teardown). Prefer computing derived UI state as a pure getter read during `render()`; if you must mutate internals-style state as a side effect, do it in `willUpdate()` so the current render already sees it.
+
 ## Styling
 
 ### CSS build pipeline

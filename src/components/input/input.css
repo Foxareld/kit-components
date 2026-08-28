@@ -3,14 +3,38 @@
 	box-sizing: border-box;
 }
 
-.default {
-	/* Add your default styles here */
+#inputContainer {
+	position: relative;
 }
 
-.primary {
-	/* Add your primary variant styles here */
+#inputContainer kit-icon {
+	position: absolute;
+	top: 50%;
+	left: var(--spacing-sm);
+	transform: translateY(-50%);
+	pointer-events: none;
+	color: var(--color-text-secondary);
 }
 
-.secondary {
-	/* Add your secondary variant styles here */
+#inputContainer kit-icon.icon-right {
+	left: auto;
+	right: var(--spacing-sm);
+}
+
+.input-base.has-icon {
+	padding-left: calc(var(--spacing-md) + 1rem + var(--spacing-sm));
+}
+
+.input-base.has-icon.icon-right {
+	padding-left: var(--spacing-md);
+	padding-right: calc(var(--spacing-md) + 1rem + var(--spacing-sm));
+}
+
+.error-text {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	margin: var(--spacing-xs) 0 0;
+	color: var(--color-danger);
+	font-size: var(--font-size-sm);
 }

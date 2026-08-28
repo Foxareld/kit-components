@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import './input.component.js';
+import '../button/button.component.js';
+import type { KitInput } from './input.component.js';
 
 /**
  * Input component for text entry and form data collection
@@ -59,6 +61,44 @@ const meta: Meta = {
 			control: 'text',
 			description: 'Validation pattern (regex)',
 		},
+		icon: {
+			control: 'select',
+			options: [
+				'',
+				'arrow-down',
+				'arrow-left',
+				'arrow-right',
+				'arrow-up',
+				'emoji',
+				'plus',
+				'xmark',
+			],
+			description: 'Optional icon shown inside the input',
+		},
+		iconColor: {
+			control: 'select',
+			options: [
+				'default',
+				'success',
+				'warning',
+				'danger',
+				'info',
+				'white',
+				'grey',
+				'disabled',
+			],
+			description: 'Color of the icon',
+		},
+		iconPlacement: {
+			control: 'select',
+			options: ['left', 'right'],
+			description: 'Which side of the input the icon is shown on',
+		},
+		iconSize: {
+			control: 'select',
+			options: ['small', 'medium', 'default', 'large', 'xlarge'],
+			description: 'Size of the icon',
+		},
 	},
 	args: {
 		type: 'text',
@@ -68,12 +108,21 @@ const meta: Meta = {
 		placeholder: 'Enter text...',
 		disabled: false,
 		required: false,
+		icon: '',
+		iconColor: 'default',
+		iconPlacement: 'left',
+		iconSize: 'small',
 	},
 };
 
 export default meta;
 type Story = StoryObj;
 
+/**
+ * The default story exposes every kit-input control. Use the controls panel
+ * to explore variants (password, number, email, disabled, required, etc.)
+ * instead of maintaining a separate story per prop combination.
+ */
 export const Default: Story = {
 	render: (args) => html`
 		<kit-input
@@ -89,43 +138,77 @@ export const Default: Story = {
 			.min=${args.min}
 			.max=${args.max}
 			pattern=${args.pattern}
+			icon=${args.icon || nothing}
+			icon-color=${args.iconColor}
+			icon-placement=${args.iconPlacement}
+			icon-size=${args.iconSize}
 		></kit-input>
 	`,
 };
 
-export const WithLabel: Story = {
-	args: {
-		label: 'Email Address',
-		type: 'email',
-		placeholder: 'you@example.com',
-		required: true,
-	},
-};
+/**
+ * A realistic form built from kit-input and kit-button. Field-level
+ * validation is entirely native — required/email are native browser
+ * constraints, and kit-input reports its own error text once a check
+ * has been attempted. Only the business rule ("red" is the wrong answer)
+ * needs a line of custom code, via `setCustomValidity`:
+ * - First name: required
+ * - Last name: required
+ * - Phone number: optional
+ * - Email: required, must look like an email address
+ * - "Best color": required, and "red" is rejected as the wrong answer
+ */
+export const InAForm: Story = {
+	render: () => {
+		const handleSubmit = (event: Event) => {
+			const form = (event.currentTarget as HTMLElement).closest('form');
+			if (!form) return;
 
-export const Password: Story = {
-	args: {
-		label: 'Password',
-		type: 'password',
-		placeholder: 'Enter password',
-		minLength: 8,
-		required: true,
-	},
-};
+			const colorInput = form.querySelector<KitInput>(
+				'kit-input[name="favoriteColor"]'
+			);
+			if (colorInput) {
+				const isRed = colorInput.value.trim().toLowerCase() === 'red';
+				colorInput.setCustomValidity(
+					isRed ? 'Wrong answer — green is the best color.' : ''
+				);
+			}
 
-export const Number: Story = {
-	args: {
-		label: 'Age',
-		type: 'number',
-		placeholder: 'Enter your age',
-		min: 0,
-		max: 120,
-	},
-};
+			const isValid = form.reportValidity();
 
-export const Disabled: Story = {
-	args: {
-		label: 'Disabled Input',
-		value: 'Cannot edit this',
-		disabled: true,
+			const status = form.querySelector<HTMLElement>('[data-form-status]');
+			if (status) {
+				status.textContent = isValid ? 'Form submitted successfully!' : '';
+			}
+		};
+
+		return html`
+			<style>
+				.demo-form {
+					display: flex;
+					flex-direction: column;
+					gap: var(--spacing-md, 1rem);
+					max-width: 320px;
+				}
+				.form-status {
+					color: var(--color-success, #24a148);
+					font-size: var(--font-size-sm, 0.875rem);
+					margin: 0;
+				}
+			</style>
+			<form class="demo-form" @submit=${(e: Event) => e.preventDefault()}>
+				<kit-input label="First Name" name="firstName" required></kit-input>
+				<kit-input label="Last Name" name="lastName" required></kit-input>
+				<kit-input label="Phone Number" name="phone" type="text"></kit-input>
+				<kit-input label="Email" name="email" type="email" required></kit-input>
+				<kit-input
+					label="What's the best color, red or green?"
+					name="favoriteColor"
+					required
+				></kit-input>
+				<kit-button type="submit" @click=${handleSubmit}>Submit</kit-button>
+				<p class="form-status" data-form-status></p>
+			</form>
+		`;
 	},
 };
