@@ -20,17 +20,27 @@ try {
 
 const preview: Preview = {
 	parameters: {
-		controls: {
+        controls: {
 			matchers: {
 				color: /(background|color)$/i,
 				date: /Date$/i,
 			},
 		},
-		docs: {
+
+        docs: {
 			toc: true, // Show table of contents in docs
 		},
-		actions: { argTypesRegex: '^on[A-Z].*' }, // Auto-detect event handlers
-	},
+
+        // Auto-detect event handlers
+        actions: { argTypesRegex: '^on[A-Z].*' },
+
+        a11y: {
+            // 'todo' - show a11y violations in the test UI only
+            // 'error' - fail CI on a11y violations
+            // 'off' - skip a11y checks entirely
+            test: 'todo'
+        }
+    },
 	async beforeEach() {
 		spyOn(console, 'log').mockName('console.log');
 	},
