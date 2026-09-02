@@ -1,0 +1,100 @@
+:host {
+	display: inline-block;
+}
+
+#row {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+	cursor: pointer;
+}
+
+:host([disabled]) #row {
+	cursor: not-allowed;
+}
+
+#boxWrapper {
+	position: relative;
+	display: inline-flex;
+	flex-shrink: 0;
+}
+
+#checkbox {
+	position: absolute;
+	inset: 0;
+	margin: 0;
+	width: 16px;
+	height: 16px;
+	opacity: 0;
+	cursor: pointer;
+}
+
+:host([disabled]) #checkbox {
+	cursor: not-allowed;
+}
+
+#box {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 16px;
+	height: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--color-white);
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+:host(:not([disabled]):hover) #box {
+	border-color: var(--color-primary-hover);
+}
+
+:host([checked]) #box,
+:host([indeterminate]) #box {
+	border-color: var(--color-primary);
+	background-color: var(--color-primary);
+}
+
+:host([checked]:not([disabled]):hover) #box,
+:host([indeterminate]:not([disabled]):hover) #box {
+	border-color: var(--color-primary-hover);
+	background-color: var(--color-primary-hover);
+}
+
+#checkbox:focus-visible ~ #box {
+	outline: var(--outline);
+	outline-offset: 2px;
+}
+
+#box.error {
+	border-color: var(--color-danger);
+}
+
+#dash {
+	display: block;
+	width: 8px;
+	height: 2px;
+	background: var(--color-text);
+	border-radius: 1px;
+}
+
+#label {
+	font-size: var(--font-size-base);
+	line-height: var(--line-height);
+}
+
+.required-indicator {
+	color: var(--color-danger);
+}
+
+.error-text {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	margin: var(--spacing-xs) 0 0;
+	color: var(--color-danger);
+	font-size: var(--font-size-sm);
+}
