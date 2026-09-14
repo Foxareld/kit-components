@@ -43,3 +43,10 @@ yarn-error.log*
 .tmp/
 
 *storybook.log
+
+# Pulled reference copy of the claude.ai/design "Kit Design System" project
+# (source of truth lives there; this is a local read-only mirror for reference)
+design-reference/
+
+# Personal, machine-local Claude Code instructions (not shared with the team)
+CLAUDE.local.md
