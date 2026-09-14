@@ -1,0 +1,26 @@
+:host {
+	display: inline-block;
+	position: relative;
+}
+
+#triggerAnchor {
+	display: inline-block;
+	anchor-name: --kit-dropdown-trigger;
+}
+
+#content {
+	position: fixed;
+	inset: auto;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: none;
+	color: inherit;
+	max-height: 100vh;
+	overflow: auto;
+
+	position-anchor: --kit-dropdown-trigger;
+	position-area: block-end span-inline-start;
+	position-try-fallbacks: flip-block, flip-inline;
+	margin-block-start: var(--spacing-xs, 0.25rem);
+}
