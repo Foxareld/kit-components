@@ -71,18 +71,50 @@
 **Decision:** `kit-tab-group` uses automatic activation, matching `kit-radio-group`: arrow keys move focus and select the tab in the same step. Space/Enter also select, for when a tab is reached via Tab key rather than arrows.
 **Why:** WAI-ARIA APG allows either model, recommending manual activation only when moving to a tab triggers an expensive operation (e.g. a network fetch for panel content). Kit doesn't know what a consumer's panel switch costs, but automatic activation is the more common/expected default for tabs, and matching `kit-radio-group`'s existing behavior keeps keyboard behavior consistent across Kit's grouped-selection components rather than introducing a second interaction model for no in-repo precedent-driven reason.
 
-## kit-tab-group — orientation and Home/End support, absent from kit-radio-group
+## kit-tab-group — Home/End support, absent from kit-radio-group
 
 **Tag:** accessibility
 **Audience:** consumer
-**Symptom/question:** Neither the predecessor `fs-tab-group` nor Kit's own `kit-radio-group` support a vertical layout with the correct arrow-key mapping, and `kit-radio-group` has no Home/End support. The WAI-ARIA APG tabs pattern (unlike the radio pattern as Kit implements it) explicitly specifies both: `aria-orientation` with orientation-appropriate arrow keys, and Home/End to jump to the first/last tab.
-**Decision:** Added an `orientation: 'horizontal' | 'vertical'` property (reflected, drives both `aria-orientation` and which arrow-key pair navigates) and Home/End handling to `kit-tab-group`.
-**Why:** This is spec-required behavior for the tablist widget specifically, not a gap being carried over for consistency's sake — vertical tabs are a common real layout (e.g. settings pages), and Home/End are cheap to support once arrow-key navigation already exists.
+**Symptom/question:** `kit-radio-group` has no Home/End support. The WAI-ARIA APG tabs pattern (unlike the radio pattern as Kit implements it) specifies Home/End to jump to the first/last tab as part of the tablist widget's expected keyboard support.
+**Decision:** Added Home/End handling to `kit-tab-group`'s keydown handler (jumps to the first/last *enabled* tab).
+**Why:** This is spec-required behavior for the tablist widget specifically, not a gap being carried over for consistency's sake, and cheap to support once arrow-key navigation already exists. (An `orientation` property/vertical layout was also prototyped alongside this but deliberately cut — see below.)
 
-## kit-tab / kit-tab-group — no kit-tab-panel; panel wiring is left to the consumer
+## kit-tab-group — no orientation property; tabs are always horizontal
 
 **Tag:** architecture
 **Audience:** consumer
-**Symptom/question:** Neither the predecessor `fs-tab`/`fs-tab-group` nor this Kit pair solve the tabpanel half of the tabs pattern — the predecessor has no panel component or `aria-controls` wiring at all. The question was whether Kit's version should introduce a `kit-tab-panel` to close that gap.
-**Decision:** Scoped this work to `kit-tab` + `kit-tab-group` only, matching what was asked for. `kit-tab` doesn't manage panel content; consumers pair a tab with its panel using a standard `aria-controls` attribute (a plain global HTML attribute, so it just works without any special handling) and switch panel visibility off `kit-tab-group`'s `change` event / `value` property, demonstrated in the `WithPanels` story.
-**Why:** A tabpanel component is a legitimately separate piece of scope (its own visibility/animation/lazy-render concerns) rather than a natural extension of the tab button itself — better added deliberately later if a consumer need shows up than bolted on speculatively here.
+**Symptom/question:** WAI-ARIA APG's tabs pattern supports a vertical orientation (`aria-orientation`, Up/Down arrow keys instead of Left/Right), and an `orientation` property was built to support it. There was no concrete consumer need for vertical tabs driving this — it was added speculatively because the spec allows for it.
+**Decision:** Removed the `orientation` property entirely. `kit-tab-group` only supports horizontal tabs: Left/Right arrow keys, no `aria-orientation` attribute, no vertical CSS variant.
+**Why:** Building for a layout variant nothing in this codebase or its consumers currently needs is exactly the kind of speculative surface area this repo's conventions call out to avoid. Easy to reintroduce later (the arrow-key-set and CSS branching were both small and isolated) if a real vertical-tabs need shows up.
+
+## kit-tab-panel — pairs with kit-tab-group by id, not by slotting
+
+**Tag:** architecture
+**Audience:** consumer
+**Symptom/question:** There's no predecessor `fs-tab-panel` to take prior art from — this is new ground. The main design fork: should a panel be a slotted child of `kit-tab-group` (alongside the tabs), or a sibling component paired by reference?
+**Decision:** `kit-tab-panel` is a standalone element paired with a `kit-tab-group` via a `tab-group="<id>"` attribute (the same idea as a native `<label for>`), resolved once via `document.getElementById` when the panel connects. It is not slotted into the group and doesn't have to be adjacent to it in the DOM.
+**Why:** Tab panels commonly need to live somewhere other than right next to the tablist (e.g. the tabs in a page header, the panel content lower in the layout, or panels rendered by an entirely different part of the app). Slotting panels into `kit-tab-group` would also mean the group's slot mixes two different child types (`kit-tab` and `kit-tab-panel`), complicating `@queryAssignedElements`-based child discovery for no real benefit. An id-reference keeps `kit-tab-group` unaware panels exist at all — it still only manages tabs.
+
+## kit-tab-panel — visibility starts hidden until the paired group resolves
+
+**Tag:** accessibility
+**Audience:** internal
+**Symptom/question:** Resolving the paired `kit-tab-group` and reading its `value` happens asynchronously (`await group.updateComplete`, since the group may not have finished picking its own default-selected tab yet — see the "always keeps exactly one enabled tab selected" decision above). If a panel defaulted to visible until that resolution finished, multiple panels could theoretically render visible together for that brief window.
+**Decision:** `kit-tab-panel` sets `hidden = true` synchronously in `connectedCallback()`, before the async group resolution even starts, then corrects it once the real value is known.
+**Why:** Cheap to guarantee "at most one panel visible" holds at every observable point rather than relying on the resolution being fast enough in practice to not matter.
+
+## kit-tab-panel — auto-wires aria-controls/aria-labelledby, without overwriting a consumer's own
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** The predecessor never solved tab/panel ARIA linkage at all, and Kit's own `kit-tab`/`kit-tab-group` (built before this component existed) left `aria-controls` wiring as a manual task for the consumer. Now that `kit-tab-panel` exists and already has to find its matching `kit-tab` (by `value`) to determine visibility, it has everything needed to close that gap automatically.
+**Decision:** On connecting to its paired group, `kit-tab-panel` finds the `kit-tab` whose `value` matches its own, assigns ids to itself and/or the tab if either is missing, and sets `aria-controls` on the tab and `aria-labelledby` on itself — but only if the corresponding attribute isn't already present, so a consumer's own explicit wiring (or a pre-set `id`) is never clobbered.
+**Why:** This is exactly the kind of accessibility completeness a dedicated component should provide by default; leaving it manual was only ever a stopgap for when no panel component existed yet. The "don't overwrite" guard keeps it safe for consumers who want to set their own ids/attributes for other reasons (e.g. deep-linking to a specific panel).
+
+## kit-tab-group — change event now fires for externally-set value, not just interactive selection
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** `kit-tab-group`'s `updated()` already re-synced slotted tabs when `value` was set externally (`group.value = 'x'`), mirroring `kit-radio-group`'s equivalent path — but that path never dispatched `change`, only the internal `_selectTab()` (click/keyboard) did. Building `kit-tab-panel`, which listens for `change` to know when to swap visibility, surfaced this as a real gap: a panel would go stale if a consumer drove tab selection by setting `.value` directly instead of clicking/using the keyboard.
+**Decision:** `updated()` now also dispatches `change` when it detects and applies an externally-set `value` (guarded so it can't double-fire alongside `_selectTab()`'s own dispatch, since by the time `updated()` runs after an interactive selection, the group and its tabs are already back in sync).
+**Why:** `kit-tab-group`'s own docs already promise consumers can "switch panel visibility off the `change` event" — that contract wasn't actually true for the programmatic-selection case until this fix. Deliberately not carried back into `kit-radio-group`: a form doesn't need a `change` event for every programmatic value assignment the way a panel-switcher does, and radio-group's existing asymmetry is established, tested behavior with its own consumers already depending on it.
