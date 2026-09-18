@@ -10,3 +10,6 @@ export * from './option/index.js';
 export * from './radio/index.js';
 export * from './radio-group/index.js';
 export * from './select/index.js';
+export * from './tab/index.js';
+export * from './tab-group/index.js';
+export * from './tab-panel/index.js';

@@ -46,3 +46,43 @@
 **Symptom/question:** `select.test.ts` hung the whole file indefinitely (no test even reported a result) the same way `dropdown.test.ts` once did. Root cause: `kit-select` closes its internal `kit-dropdown` by setting `dropdownEl.open = false`, which schedules a Lit update on `kit-dropdown` — a separate custom element with its own independent update cycle. `await selectEl.updateComplete` only waits for `kit-select`'s own update, not its child's, so a test could observe `document.activeElement` before `kit-dropdown`'s own close/focus-return logic had actually run. That race then broke the next test's fixture teardown, producing the hang.
 **Decision:** Overrode `getUpdateComplete()` on `kit-select` to additionally await the internal `kit-dropdown` element's own `updateComplete`, per Lit's documented pattern for awaiting descendant updates.
 **Why:** This fixes the race for every consumer, not just tests — `await selectEl.updateComplete` now genuinely means "kit-select and everything it just told kit-dropdown to do have both settled." The alternative (only fixing it in test helpers) would leave the same footgun for real app code.
+
+## kit-tab-group — not form-associated, despite following the radio-group reference pattern
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** `kit-tab-group`/`kit-tab` were built following `kit-radio-group`/`kit-radio` as the structural reference (slotted children, delegated click/keydown on the parent, roving tabindex) — the obvious question was whether to also extend `FormAssociatedElement` like radio-group does.
+**Decision:** `kit-tab-group` and `kit-tab` both extend `KitElement` directly. No validity API, no `formResetCallback`, no form value submission.
+**Why:** Tabs aren't a form control — a tablist doesn't submit a value to a server, it's a navigation/disclosure widget. `FormAssociatedElement`'s validity boilerplate (`checkValidity`, `willValidate`, etc.) would be dead API surface on a component that can never be invalid or required. The slotted-children-plus-delegated-events shape is what's worth reusing from radio-group, not the form plumbing on top of it.
+
+## kit-tab-group — always keeps exactly one enabled tab selected
+
+**Tag:** architecture
+**Audience:** consumer
+**Symptom/question:** `kit-radio-group` allows "nothing checked" as a valid state (relevant for optional form fields). Tabs don't have an equivalent "nothing selected" state — a tablist with no visible active tab isn't a state any real tab UI has.
+**Decision:** If no slotted `kit-tab` has `selected` set and no `value` is supplied, `kit-tab-group` selects the first enabled tab itself on `firstUpdated()`. This mirrors the predecessor `fs-tab-group`'s `_calculateCurrentIndexOrSelectFirst` behavior.
+**Why:** Consumers shouldn't have to remember to mark one tab `selected` for the component to render sensibly — a tablist with a roving tabindex needs a tabbable tab regardless, so defaulting to the first enabled one keeps both the visuals and keyboard entry point correct out of the box.
+
+## kit-tab-group — automatic activation (arrow keys select immediately), not manual
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** The predecessor `fs-tab-group` uses manual activation — arrow keys only move focus, and a separate Enter/Space press is needed to actually select a tab. Kit's own `kit-radio-group` (the in-repo reference for this composition shape) instead selects immediately on arrow-key movement.
+**Decision:** `kit-tab-group` uses automatic activation, matching `kit-radio-group`: arrow keys move focus and select the tab in the same step. Space/Enter also select, for when a tab is reached via Tab key rather than arrows.
+**Why:** WAI-ARIA APG allows either model, recommending manual activation only when moving to a tab triggers an expensive operation (e.g. a network fetch for panel content). Kit doesn't know what a consumer's panel switch costs, but automatic activation is the more common/expected default for tabs, and matching `kit-radio-group`'s existing behavior keeps keyboard behavior consistent across Kit's grouped-selection components rather than introducing a second interaction model for no in-repo precedent-driven reason.
+
+## kit-tab-group — orientation and Home/End support, absent from kit-radio-group
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** Neither the predecessor `fs-tab-group` nor Kit's own `kit-radio-group` support a vertical layout with the correct arrow-key mapping, and `kit-radio-group` has no Home/End support. The WAI-ARIA APG tabs pattern (unlike the radio pattern as Kit implements it) explicitly specifies both: `aria-orientation` with orientation-appropriate arrow keys, and Home/End to jump to the first/last tab.
+**Decision:** Added an `orientation: 'horizontal' | 'vertical'` property (reflected, drives both `aria-orientation` and which arrow-key pair navigates) and Home/End handling to `kit-tab-group`.
+**Why:** This is spec-required behavior for the tablist widget specifically, not a gap being carried over for consistency's sake — vertical tabs are a common real layout (e.g. settings pages), and Home/End are cheap to support once arrow-key navigation already exists.
+
+## kit-tab / kit-tab-group — no kit-tab-panel; panel wiring is left to the consumer
+
+**Tag:** architecture
+**Audience:** consumer
+**Symptom/question:** Neither the predecessor `fs-tab`/`fs-tab-group` nor this Kit pair solve the tabpanel half of the tabs pattern — the predecessor has no panel component or `aria-controls` wiring at all. The question was whether Kit's version should introduce a `kit-tab-panel` to close that gap.
+**Decision:** Scoped this work to `kit-tab` + `kit-tab-group` only, matching what was asked for. `kit-tab` doesn't manage panel content; consumers pair a tab with its panel using a standard `aria-controls` attribute (a plain global HTML attribute, so it just works without any special handling) and switch panel visibility off `kit-tab-group`'s `change` event / `value` property, demonstrated in the `WithPanels` story.
+**Why:** A tabpanel component is a legitimately separate piece of scope (its own visibility/animation/lazy-render concerns) rather than a natural extension of the tab button itself — better added deliberately later if a consumer need shows up than bolted on speculatively here.
