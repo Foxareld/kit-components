@@ -1,0 +1,40 @@
+:host {
+	display: block;
+	outline: none;
+}
+
+#option {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-sm);
+	padding: 7px var(--spacing-md);
+	font-size: var(--font-size-base);
+	line-height: var(--line-height);
+	cursor: pointer;
+}
+
+:host(:not([disabled]):hover) #option {
+	background-color: #e4e7eb;
+}
+
+:host([selected]) #option {
+	color: var(--color-text);
+}
+
+:host([selected]) #check {
+	color: var(--color-primary);
+}
+
+:host([disabled]) #option {
+	cursor: not-allowed;
+}
+
+:host(:focus-visible) #option {
+	outline: var(--outline);
+	outline-offset: -2px;
+}
+
+#check {
+	flex-shrink: 0;
+}

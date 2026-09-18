@@ -6,5 +6,7 @@ export * from './checkbox/index.js';
 export * from './dropdown/index.js';
 export * from './icon/index.js';
 export * from './input/index.js';
+export * from './option/index.js';
 export * from './radio/index.js';
 export * from './radio-group/index.js';
+export * from './select/index.js';
