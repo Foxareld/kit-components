@@ -17,6 +17,11 @@ import type { KitAccordionItem } from '../accordion-item/accordion-item.componen
  * — multiple can be open at once by default. Set `single` to close every
  * other item whenever one opens, matching kit-tab-group's behavior.
  *
+ * `heading-level` is set once on the group and pushed down to every item's
+ * own `heading-level`, overwriting it — so a consumer configures the
+ * outline position for the whole accordion in one place instead of
+ * repeating it per item.
+ *
  * @slot - kit-accordion-item children
  *
  * @csspart root - The element carrying the items
@@ -35,8 +40,22 @@ export class KitAccordion extends KitElement {
 	@property({ type: Boolean, reflect: true })
 	single = false;
 
+	/**
+	 * The heading level applied to every item's header, overwriting each
+	 * item's own `heading-level`. Set this to match where the accordion
+	 * sits in the surrounding page's heading outline.
+	 */
+	@property({ type: Number, attribute: 'heading-level' })
+	headingLevel = 3;
+
 	private get _enabledItems(): KitAccordionItem[] {
 		return this._itemElements.filter((item) => !item.disabled);
+	}
+
+	private _applyHeadingLevel() {
+		for (const item of this._itemElements) {
+			item.headingLevel = this.headingLevel;
+		}
 	}
 
 	private _handleChange(event: Event) {
@@ -48,6 +67,10 @@ export class KitAccordion extends KitElement {
 		for (const item of this._itemElements) {
 			if (item !== target) item.open = false;
 		}
+	}
+
+	private _handleSlotChange() {
+		this._applyHeadingLevel();
 	}
 
 	private _handleKeydown(event: KeyboardEvent) {
@@ -90,6 +113,8 @@ export class KitAccordion extends KitElement {
 	protected firstUpdated(changedProperties: PropertyValues<this>) {
 		super.firstUpdated(changedProperties);
 
+		this._applyHeadingLevel();
+
 		if (!this.single) return;
 
 		let seenOpen = false;
@@ -103,10 +128,18 @@ export class KitAccordion extends KitElement {
 		}
 	}
 
+	protected updated(changedProperties: PropertyValues<this>) {
+		super.updated(changedProperties);
+
+		if (changedProperties.has('headingLevel')) {
+			this._applyHeadingLevel();
+		}
+	}
+
 	render() {
 		return html`
 			<div part="root" @change=${this._handleChange} @keydown=${this._handleKeydown}>
-				<slot></slot>
+				<slot @slotchange=${this._handleSlotChange}></slot>
 			</div>
 		`;
 	}

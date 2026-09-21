@@ -17,7 +17,14 @@ button {
 	background: none;
 	border: none;
 	font-family: inherit;
-	font-size: var(--font-size-base);
+	/* inherit, not a hardcoded size: the button is slotted into
+	   kit-heading's own hN element, and inherited properties cascade
+	   through slot assignment based on that rendered position — this is
+	   what lets kit-heading's level-derived (or size-overridden) font-size
+	   and weight actually reach the button text. A hardcoded value here
+	   would silently override whatever level the accordion sets. */
+	font-size: inherit;
+	font-weight: inherit;
 	color: var(--color-text);
 	text-align: left;
 	cursor: pointer;

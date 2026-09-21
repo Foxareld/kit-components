@@ -109,6 +109,20 @@ describe('KitAccordionItem', () => {
 		expect(el.shadowRoot!.activeElement).to.equal(button);
 	});
 
+	it('wraps the trigger in a kit-heading at heading-level (default 3)', async () => {
+		const el = await fixture<KitAccordionItem>(html`
+			<kit-accordion-item heading-level="4">
+				<span slot="header">Header</span>
+				Content
+			</kit-accordion-item>
+		`);
+		const heading = el.shadowRoot!.querySelector('kit-heading')!;
+
+		expect(heading.getAttribute('level')).to.equal('4');
+		expect(heading.contains(el.shadowRoot!.querySelector('button'))).to.be
+			.true;
+	});
+
 	it('is accessible open and closed', async () => {
 		const el = await fixture<KitAccordionItem>(html`
 			<kit-accordion-item>

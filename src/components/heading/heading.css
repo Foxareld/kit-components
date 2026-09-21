@@ -1,0 +1,51 @@
+:host {
+	display: block;
+}
+
+.heading {
+	margin: 0;
+	font-family: inherit;
+	/* No --font-weight-* token exists in src/styles/variables.css yet —
+	   the design system's exported tokens/typography.css documents
+	   --font-weight-medium (500), but it was never actually added to the
+	   shipped variables. Hardcoding here matches every other component
+	   (kit-tab, kit-radio-group) doing the same rather than referencing a
+	   custom property that doesn't exist. */
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.size-display {
+	font-size: var(--heading-display);
+	line-height: var(--heading-display-leading);
+}
+
+.size-title1 {
+	font-size: var(--heading-title1);
+	line-height: var(--heading-title1-leading);
+}
+
+.size-title2 {
+	font-size: var(--heading-title2);
+	line-height: var(--heading-title2-leading);
+}
+
+.size-title3 {
+	font-size: var(--heading-title3);
+	line-height: var(--heading-title3-leading);
+}
+
+.size-title4 {
+	font-size: var(--heading-title4);
+	line-height: var(--heading-title4-leading);
+}
+
+.size-title5 {
+	font-size: var(--heading-title5);
+	line-height: var(--heading-title5-leading);
+}
+
+.size-title6 {
+	font-size: var(--heading-title6);
+	line-height: var(--heading-title6-leading);
+}

@@ -133,6 +133,53 @@ describe('KitAccordion', () => {
 		expect(document.activeElement).to.equal(one);
 	});
 
+	it('cascades heading-level to every item, overwriting each item’s own', async () => {
+		const el = await fixture<KitAccordion>(html`
+			<kit-accordion heading-level="4">
+				<kit-accordion-item value="one" heading-level="2">
+					<span slot="header">One</span>
+					First
+				</kit-accordion-item>
+				<kit-accordion-item value="two">
+					<span slot="header">Two</span>
+					Second
+				</kit-accordion-item>
+			</kit-accordion>
+		`);
+		const [one, two] = [
+			...el.querySelectorAll<KitAccordionItem>('kit-accordion-item'),
+		] as [KitAccordionItem, KitAccordionItem];
+
+		expect(one.headingLevel).to.equal(4);
+		expect(two.headingLevel).to.equal(4);
+	});
+
+	it('re-applies heading-level to items added after the group updates', async () => {
+		const el = await fixture<KitAccordion>(html`
+			<kit-accordion heading-level="5">
+				<kit-accordion-item value="one">
+					<span slot="header">One</span>
+					First
+				</kit-accordion-item>
+			</kit-accordion>
+		`);
+
+		const added = document.createElement(
+			'kit-accordion-item'
+		) as KitAccordionItem;
+		added.value = 'two';
+		const header = document.createElement('span');
+		header.slot = 'header';
+		header.textContent = 'Two';
+		added.append(header, document.createTextNode('Second'));
+		el.append(added);
+
+		await el.updateComplete;
+		await added.updateComplete;
+
+		expect(added.headingLevel).to.equal(5);
+	});
+
 	it('is accessible', async () => {
 		const el = await fixture<KitAccordion>(html`
 			<kit-accordion>

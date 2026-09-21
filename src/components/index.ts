@@ -6,6 +6,7 @@ export * from './accordion-item/index.js';
 export * from './button/index.js';
 export * from './checkbox/index.js';
 export * from './dropdown/index.js';
+export * from './heading/index.js';
 export * from './icon/index.js';
 export * from './input/index.js';
 export * from './option/index.js';

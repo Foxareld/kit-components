@@ -38,6 +38,27 @@
 	--font-size-xl: 1.25rem;
 	--line-height: 1.5;
 
+	/* Headings — scale ported from the predecessor component library's
+	   fs-heading (packages/web-components/src/assets/index.css --heading-*),
+	   converted from px to rem. Distinct from --font-size-* above: that
+	   scale serves body/UI text (buttons, error text), this one is sized
+	   specifically for heading levels. */
+	--heading-display: 2.25rem; /* 36px */
+	--heading-title1: 1.75rem; /* 28px */
+	--heading-title2: 1.5rem; /* 24px */
+	--heading-title3: 1.25rem; /* 20px */
+	--heading-title4: 1rem; /* 16px */
+	--heading-title5: 0.875rem; /* 14px */
+	--heading-title6: 0.875rem; /* 14px */
+
+	--heading-display-leading: 3rem; /* 48px */
+	--heading-title1-leading: 2.25rem; /* 36px */
+	--heading-title2-leading: 2rem; /* 32px */
+	--heading-title3-leading: 1.5rem; /* 24px */
+	--heading-title4-leading: 1.375rem; /* 22px */
+	--heading-title5-leading: 1.25rem; /* 20px */
+	--heading-title6-leading: 1.25rem; /* 20px */
+
 	/* Border radius */
 	--border-radius-sm: 0.25rem;
 	--border-radius-md: 0.5rem;

@@ -5,6 +5,7 @@ import { KitElement } from '../../base/KitElement.js';
 import { baseStyles, disabledStyles } from '../../styles/utilities.js';
 import { accordionItemStyles } from './accordion-item.styles.js';
 import '../icon/icon.component.js';
+import '../heading/heading.component.js';
 
 let itemIdCounter = 0;
 
@@ -24,7 +25,7 @@ let itemIdCounter = 0;
  *
  * @fires change - Fired on toggle, `detail: { open, value }`
  *
- * @csspart header - The heading wrapper (role="heading")
+ * @csspart header - The kit-heading wrapping the trigger button
  * @csspart trigger - The toggle button
  * @csspart icon - The expand/collapse chevron
  * @csspart panel - The panel region (the collapse/expand animation target)
@@ -56,9 +57,11 @@ export class KitAccordionItem extends KitElement {
 	value = '';
 
 	/**
-	 * The `aria-level` applied to the header's `role="heading"` wrapper.
-	 * Set this to match where the accordion sits in the surrounding page's
-	 * heading outline (defaults to 3, i.e. nested under a page's h2 sections).
+	 * The level of the `kit-heading` wrapping the trigger button. Set this
+	 * to match where the accordion sits in the surrounding page's heading
+	 * outline (defaults to 3, i.e. nested under a page's h2 sections). When
+	 * this item is inside a `kit-accordion`, the group's own `heading-level`
+	 * overwrites this on every item — set it there instead of per item.
 	 */
 	@property({ type: Number, attribute: 'heading-level' })
 	headingLevel = 3;
@@ -103,7 +106,7 @@ export class KitAccordionItem extends KitElement {
 
 	render() {
 		return html`
-			<div part="header" role="heading" aria-level=${this.headingLevel}>
+			<kit-heading part="header" level=${this.headingLevel}>
 				<button
 					type="button"
 					part="trigger"
@@ -121,7 +124,7 @@ export class KitAccordionItem extends KitElement {
 						class=${classMap({ icon: true, open: this.open })}
 					></kit-icon>
 				</button>
-			</div>
+			</kit-heading>
 			<div
 				part="panel"
 				id=${this._panelId}
