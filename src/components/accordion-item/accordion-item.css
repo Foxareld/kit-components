@@ -1,0 +1,67 @@
+:host {
+	display: block;
+	border-bottom: 1px solid var(--color-border);
+}
+
+[part='header'] {
+	margin: 0;
+}
+
+button {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing-sm);
+	width: 100%;
+	padding: var(--spacing-sm) var(--spacing-md);
+	background: none;
+	border: none;
+	font-family: inherit;
+	font-size: var(--font-size-base);
+	color: var(--color-text);
+	text-align: left;
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.icon {
+	flex-shrink: 0;
+	color: var(--color-text-secondary);
+	transition: transform var(--transition-fast);
+}
+
+.icon.open {
+	transform: rotate(180deg);
+}
+
+[part='panel'] {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows var(--transition-fast);
+}
+
+:host([open]) [part='panel'] {
+	grid-template-rows: 1fr;
+}
+
+[part='panel-inner'] {
+	/* min-height: 0 overrides the grid item's default min-height: auto —
+	   without it, the item's min-content size keeps the row from reaching
+	   the 0fr track's collapsed height. overflow: hidden is what actually
+	   clips the content away once the row shrinks. Padding must NOT live
+	   on this element: padding is part of a box's own generated size and
+	   isn't something overflow can clip, so it would keep contributing to
+	   the row's automatic minimum size even at 0fr, leaving the "closed"
+	   panel stuck open by exactly its padding. It goes on [part='content']
+	   instead, one level further in, where clipping already hides it. */
+	min-height: 0;
+	overflow: hidden;
+}
+
+[part='content'] {
+	padding: 0 var(--spacing-md) var(--spacing-md);
+}

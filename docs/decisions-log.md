@@ -134,3 +134,59 @@
 **Decision:** `updated()` now also dispatches `change` when it detects and applies an externally-set `value` (guarded so it can't double-fire alongside `_selectTab()`'s own dispatch, since by the time `updated()` runs after an interactive selection, the group and its tabs are already back in sync).
 **Why:** `kit-tab-group`'s own docs already promise consumers can "switch panel visibility off the `change` event" — that contract wasn't actually true for the programmatic-selection case until this fix. Deliberately not carried back into `kit-radio-group`: a form doesn't need a `change` event for every programmatic value assignment the way a panel-switcher does, and radio-group's existing asymmetry is established, tested behavior with its own consumers already depending on it.
 **Processed:** yes
+
+## kit-accordion-item / kit-accordion — not reusing kit-tab-panel's id-pairing model
+
+**Tag:** architecture
+**Audience:** consumer
+**Symptom/question:** Before starting, considered whether an accordion panel could reuse `kit-tab-panel`'s decoupled-by-id pairing (a panel matched to its trigger by a shared id, so it can live anywhere on the page relative to the thing that controls it).
+**Decision:** `kit-accordion-item` renders its own header and panel together, in one component — no separate panel element, no id-matching.
+**Why:** `kit-tab-panel`'s indirection earns its keep because a tab strip and its single active panel are commonly positionally separate (tabs in a header, panel content lower in the layout), and only one panel is ever visible at once. An accordion item's header and body are always a co-located pair — potentially several open simultaneously — so there's no "lives elsewhere on the page" case to design for, and the id-matching/async-connect machinery would only add indirection for nothing gained.
+
+## kit-accordion — multiple items open by default, single-open is opt-in
+
+**Tag:** architecture
+**Audience:** consumer
+**Symptom/question:** The predecessor `fs-accordion` has no group-level coordination at all — every `fs-accordion-item` is fully independent, with no way to make opening one close the others. Whether `kit-accordion` should support that exclusivity at all, and if so whether it should be the default, was a real fork (asked and decided with the user before building).
+**Decision:** Items are open/closed independently by default, matching the predecessor. `kit-accordion` adds an opt-in `single` boolean — when set, opening one item closes every other item in the group, the same mutual exclusivity `kit-tab-group` enforces between tabs.
+**Why:** Multi-open is the more common accordion default and matches the only prior art in this codebase. Making exclusivity opt-in rather than baking in one fixed behavior covers both real use cases (an FAQ list where several answers can be open at once, vs. a space-constrained settings panel where only one section should show at a time) without forcing either shape on every consumer.
+
+## kit-accordion-item — role="heading" wrapper with configurable heading-level
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** The predecessor `fs-accordion-item` never wraps its header in heading semantics at all — a screen reader user navigating by heading has no way to jump between accordion sections, which the ARIA APG accordion pattern calls for (each header nested in a heading element).
+**Decision:** Added a `heading-level` property (default 3), rendered as a `role="heading"` + `aria-level` wrapper around the header button, rather than a literal `<h3>` (or similar) tag.
+**Why:** The correct heading level depends on where a consumer places the accordion in their own page's heading outline, which a fixed tag name couldn't adapt to — `role="heading"` + `aria-level` gives the same semantics as a real heading tag while staying configurable, and isn't capped at `aria-level="6"` the way literal heading tags are.
+
+## kit-accordion-item — closed panel is inert, not just visually collapsed
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** The predecessor `fs-accordion-item` tries to keep a closed panel's content out of the tab order by setting `tabindex` on the `<slot>` element itself. That doesn't work — a `<slot>`'s own `tabindex` attribute has no effect on the focusability of the nodes assigned to it, so its collapsed panels stay fully keyboard-reachable (and exposed to assistive tech) despite being visually hidden.
+**Decision:** `kit-accordion-item` applies the `inert` attribute to the panel region while closed.
+**Why:** `inert` genuinely removes everything inside it from both the tab order and the accessibility tree, regardless of what a consumer slots in — no need to walk arbitrary slotted content and set `tabindex` on each focusable descendant by hand. Broadly supported across the browsers this repo tests against (Chromium/Firefox/WebKit via Playwright).
+
+## kit-accordion-item — dispatches 'change', not 'toggle'
+
+**Tag:** other
+**Audience:** consumer
+**Symptom/question:** The obvious name for the item's own state-change event was `toggle`. TypeScript's DOM lib defines a global `ToggleEvent` type for the native `toggle` event (fired by `<details>` and the Popover API) and maps it in `HTMLElementEventMap`, so `addEventListener('toggle', ...)` resolves to `ToggleEvent` rather than `Event`/`CustomEvent` — `event.detail` doesn't exist on it, and TypeScript flagged even this repo's own test code as an unsafe cast.
+**Decision:** Renamed the event to `change`, matching `kit-tab-group`/`kit-radio-group`'s existing convention, with `detail: { open, value }`.
+**Why:** Keeping `toggle` would have pushed the same unsafe-cast problem onto every consumer listening in TypeScript, not just this repo's tests. `change` sidesteps the native-type collision entirely and stays consistent with how every other grouped/stateful Kit component already names its state-change event.
+
+## kit-accordion-item — panel padding lives on a nested part, not the overflow:hidden element
+
+**Tag:** other
+**Audience:** internal
+**Symptom/question:** Built the collapse/expand animation with a CSS grid `0fr`/`1fr` trick on `[part='panel']`, originally with `overflow: hidden` and the panel's padding both on the same element (`[part='panel-inner']`, the grid item). A closed item still rendered with a visible sliver of height and content, exactly equal to its padding-bottom — caught visually testing in Storybook (a "single open" story showed every closed panel's text peeking through), not by the automated tests, which never asserted a pixel height.
+**Decision:** Split the grid item into two layers: the outer one (`[part='panel-inner']`) keeps only `overflow: hidden` and `min-height: 0`, and a new inner `[part='content']` carries the padding.
+**Why:** A grid item's padding is part of its own generated box and contributes to the row's automatic minimum size regardless of `overflow: hidden` — only content can be clipped away by overflow, not the box's own padding. Moving the padding one level deeper, inside the clipped element rather than on it, lets the outer box's intrinsic size actually reach zero so the `0fr` track collapses fully, while `overflow: hidden` on the parent still visually hides the now off-flow inner content. `min-height: 0` on the outer layer was also required, since a grid item's default `min-height: auto` otherwise floors it at its min-content size independent of the row's track size.
+
+## kit-accordion-item — real <button> per header, no roving tabindex across items
+
+**Tag:** accessibility
+**Audience:** consumer
+**Symptom/question:** `kit-tab-group`'s established pattern (shared by `kit-tab` and `kit-radio-group`'s `kit-radio`) is a single Tab stop for the whole group, with roving tabindex and manual keydown-based activation on a `role="tab"`/`role="radio"` element. Accordion headers don't share that shape — the ARIA APG accordion pattern expects every header to remain its own Tab stop, with arrow keys only moving focus (never roving tabindex) and Home/End jumping to the ends.
+**Decision:** `kit-accordion-item` renders a real native `<button>` for its header — getting focus, native `disabled` semantics, and Enter/Space activation for free — instead of a `role="tab"`-style element with manually-managed tabindex/keydown handling. `kit-accordion`'s own keydown handler only moves focus on arrow keys/Home/End; it never touches any item's tabindex.
+**Why:** A native button is simpler and more correct here, since accordion doesn't need — and per APG shouldn't have — the single-Tab-stop composite-widget behavior that makes roving tabindex necessary for tabs and radios. Copying `kit-tab-group`'s roving-tabindex shape anyway would have made every header but one unreachable via Tab, which is wrong specifically for accordions.
