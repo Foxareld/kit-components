@@ -17,8 +17,6 @@ import { buttonStyles } from './button.styles.js';
 export class KitButton extends KitElement {
 	static styles = [baseStyles, buttonStyles];
 
-	private _internals!: ElementInternals;
-
 	/**
 	 * The visual style variant of the button
 	 */

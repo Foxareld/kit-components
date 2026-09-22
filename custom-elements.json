@@ -4,6 +4,545 @@
   "modules": [
     {
       "kind": "javascript-module",
+      "path": "src/components/accordion/accordion.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Groups kit-accordion-item children, adding arrow-key navigation between\nheaders (Up/Down move focus, Home/End jump to the ends — Tab still moves\nthrough every header in document order, unlike kit-tab-group's roving\ntabindex, since accordion headers are each independently tabbable per the\nARIA APG accordion pattern) and, opt-in via `single`, mutual exclusivity.\n\nItems are independently functional without a parent kit-accordion at all\n— multiple can be open at once by default. Set `single` to close every\nother item whenever one opens, matching kit-tab-group's behavior.\n\n`heading-level` is set once on the group and pushed down to every item's\nown `heading-level`, overwriting it — so a consumer configures the\noutline position for the whole accordion in one place instead of\nrepeating it per item.",
+          "name": "KitAccordion",
+          "cssParts": [
+            {
+              "description": "The element carrying the items",
+              "name": "root"
+            }
+          ],
+          "slots": [
+            {
+              "description": "kit-accordion-item children",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_itemElements",
+              "type": {
+                "text": "KitAccordionItem[]"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "single",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "When true, opening one item closes every other item in the group.\nWhen false (the default), items open and close independently.",
+              "attribute": "single",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "headingLevel",
+              "type": {
+                "text": "number"
+              },
+              "default": "3",
+              "description": "The heading level applied to every item's header, overwriting each\nitem's own `heading-level`. Set this to match where the accordion\nsits in the surrounding page's heading outline.",
+              "attribute": "heading-level"
+            },
+            {
+              "kind": "field",
+              "name": "_enabledItems",
+              "type": {
+                "text": "KitAccordionItem[]"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_applyHeadingLevel",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleChange",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleSlotChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "single",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "When true, opening one item closes every other item in the group.\nWhen false (the default), items open and close independently.",
+              "fieldName": "single"
+            },
+            {
+              "name": "heading-level",
+              "type": {
+                "text": "number"
+              },
+              "default": "3",
+              "description": "The heading level applied to every item's header, overwriting each\nitem's own `heading-level`. Set this to match where the accordion\nsits in the surrounding page's heading outline.",
+              "fieldName": "headingLevel"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-accordion",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitAccordion",
+          "declaration": {
+            "name": "KitAccordion",
+            "module": "src/components/accordion/accordion.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-accordion",
+          "declaration": {
+            "name": "KitAccordion",
+            "module": "src/components/accordion/accordion.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/accordion-item/accordion-item.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A single collapsible header/panel pair. Self-contained and independently\nusable — it owns its own `open` state and toggles itself on click, so it\nworks standalone without a parent `kit-accordion`.\n\nPair several under `kit-accordion` for arrow-key navigation between\nheaders and, opt-in via `single`, mutual exclusivity. `kit-tab-panel`'s\ndecoupled-by-id pairing model doesn't apply here: a header and its panel\nare always a co-located pair, never positionally separate the way a tab\nstrip and its panel can be.",
+          "name": "KitAccordionItem",
+          "cssParts": [
+            {
+              "description": "The kit-heading wrapping the trigger button",
+              "name": "header"
+            },
+            {
+              "description": "The toggle button",
+              "name": "trigger"
+            },
+            {
+              "description": "The expand/collapse chevron",
+              "name": "icon"
+            },
+            {
+              "description": "The panel region (the collapse/expand animation target)",
+              "name": "panel"
+            },
+            {
+              "description": "The padded wrapper around the slotted panel content",
+              "name": "content"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The header content (the always-visible clickable label)",
+              "name": "header"
+            },
+            {
+              "description": "The panel content, shown when open",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_headerId",
+              "privacy": "private",
+              "default": "`kit-accordion-item-header-${++itemIdCounter}`"
+            },
+            {
+              "kind": "field",
+              "name": "_panelId",
+              "privacy": "private",
+              "default": "`kit-accordion-item-panel-${itemIdCounter}`"
+            },
+            {
+              "kind": "field",
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the panel is expanded.",
+              "attribute": "open",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this item is disabled — the header button can't be toggled.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "An identifier for this item, surfaced in the `toggle` event detail.",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "headingLevel",
+              "type": {
+                "text": "number"
+              },
+              "default": "3",
+              "description": "The level of the `kit-heading` wrapping the trigger button. Set this\nto match where the accordion sits in the surrounding page's heading\noutline (defaults to 3, i.e. nested under a page's h2 sections). When\nthis item is inside a `kit-accordion`, the group's own `heading-level`\noverwrites this on every item — set it there instead of per item.",
+              "attribute": "heading-level"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "optional": true,
+                  "type": {
+                    "text": "FocusOptions"
+                  }
+                }
+              ],
+              "description": "Moves focus to the header button."
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Fired on toggle, `detail: { open, value }`"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the panel is expanded.",
+              "fieldName": "open"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this item is disabled — the header button can't be toggled.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "An identifier for this item, surfaced in the `toggle` event detail.",
+              "fieldName": "value"
+            },
+            {
+              "name": "heading-level",
+              "type": {
+                "text": "number"
+              },
+              "default": "3",
+              "description": "The level of the `kit-heading` wrapping the trigger button. Set this\nto match where the accordion sits in the surrounding page's heading\noutline (defaults to 3, i.e. nested under a page's h2 sections). When\nthis item is inside a `kit-accordion`, the group's own `heading-level`\noverwrites this on every item — set it there instead of per item.",
+              "fieldName": "headingLevel"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-accordion-item",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitAccordionItem",
+          "declaration": {
+            "name": "KitAccordionItem",
+            "module": "src/components/accordion-item/accordion-item.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-accordion-item",
+          "declaration": {
+            "name": "KitAccordionItem",
+            "module": "src/components/accordion-item/accordion-item.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/dropdown/dropdown.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Anchors floating content to a trigger and shows/hides it via the native\nPopover API — light-dismiss (click-outside), Escape-to-close, and\ntop-layer rendering (so it's never clipped by an ancestor's overflow)\nall come from the platform instead of custom listeners. Positioning\nuses CSS anchor positioning where supported; browsers without it get a\nplain, non-flipping position computed once when the dropdown opens\n(not tracked continuously on scroll/resize).\n\nContent-agnostic: it only owns opening/closing and positioning. Any\nkeyboard handling, search, or selection logic belongs to whatever is\nslotted in — a menu, a form, plain text.",
+          "name": "KitDropdown",
+          "cssParts": [
+            {
+              "description": "Wrapper around the trigger slot; also the anchor positioning reference",
+              "name": "trigger"
+            },
+            {
+              "description": "The floating content container",
+              "name": "content"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The element that opens/closes the dropdown on click",
+              "name": "trigger"
+            },
+            {
+              "description": "The dropdown's content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_supportsAnchorPositioning",
+              "privacy": "private",
+              "static": true,
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_contentElement",
+              "type": {
+                "text": "HTMLElement"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_triggerElements",
+              "type": {
+                "text": "HTMLElement[]"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the dropdown's content is open. Reflects to an attribute,\nthe same pattern as native `<details open>` — set it directly to\nopen/close the dropdown programmatically.",
+              "attribute": "open",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disableTrigger",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "When true, clicking the trigger slot no longer opens/closes the\ndropdown on its own — set `open` or call `toggle()` yourself\ninstead. Useful when the trigger has its own buttons or other\ninteractive bits that shouldn't always open the dropdown.\n\nThe trigger stays fully clickable and focusable either way — this\nonly turns off the automatic open/close wiring, it doesn't disable\nthe trigger itself. For that, use `disabled` instead.",
+              "attribute": "disable-trigger",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disables the dropdown entirely: it can't be opened (via the trigger\nor `toggle()`), and the `disabled` attribute is set on the assigned\ntrigger element(s) so a component like kit-button shows its own\ndisabled styling.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "method",
+              "name": "toggle",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "Toggles the dropdown open or closed. No-ops while disabled."
+            },
+            {
+              "kind": "field",
+              "name": "_handleTriggerClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_handleTriggerSlotChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_handlePopoverToggle",
+              "privacy": "private",
+              "description": "The native `toggle` event on the popover element is the source of\ntruth for `open` — the browser can close it itself (Escape,\nlight-dismiss) without `close()`/`open = false` ever being called.\nIt only needs to sync the property here: `updated()` reacts to that\nchange (along with any change we make ourselves) in one place,\nrather than duplicating side effects in both places and racing the\nnative event's own (asynchronous) timing."
+            },
+            {
+              "kind": "method",
+              "name": "_updateTriggerAria",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_updateTriggerDisabled",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "_positionFallback",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "description": "One-shot position for browsers without CSS anchor positioning\nsupport, computed when the dropdown opens rather than tracked\ncontinuously. Full viewport-collision tracking on scroll/resize\nwould mean always-on positioning logic running for every open\ndropdown — a deliberate scope cut for the shrinking browser tail\nthat lacks anchor positioning."
+            }
+          ],
+          "events": [
+            {
+              "name": "toggle",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "open",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the dropdown's content is open. Reflects to an attribute,\nthe same pattern as native `<details open>` — set it directly to\nopen/close the dropdown programmatically.",
+              "fieldName": "open"
+            },
+            {
+              "name": "disable-trigger",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "When true, clicking the trigger slot no longer opens/closes the\ndropdown on its own — set `open` or call `toggle()` yourself\ninstead. Useful when the trigger has its own buttons or other\ninteractive bits that shouldn't always open the dropdown.\n\nThe trigger stays fully clickable and focusable either way — this\nonly turns off the automatic open/close wiring, it doesn't disable\nthe trigger itself. For that, use `disabled` instead.",
+              "fieldName": "disableTrigger"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Disables the dropdown entirely: it can't be opened (via the trigger\nor `toggle()`), and the `disabled` attribute is set on the assigned\ntrigger element(s) so a component like kit-button shows its own\ndisabled styling.",
+              "fieldName": "disabled"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-dropdown",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitDropdown",
+          "declaration": {
+            "name": "KitDropdown",
+            "module": "src/components/dropdown/dropdown.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-dropdown",
+          "declaration": {
+            "name": "KitDropdown",
+            "module": "src/components/dropdown/dropdown.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/components/button/button.component.ts",
       "declarations": [
         {
@@ -144,6 +683,2671 @@
           "declaration": {
             "name": "KitButton",
             "module": "src/components/button/button.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/checkbox/checkbox.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Checkbox component. Wraps a real native `<input type=\"checkbox\">` so it\ngets native keyboard/click/indeterminate behavior for free — its\nValidityState is mirrored into ElementInternals, same as kit-input.",
+          "name": "KitCheckbox",
+          "cssParts": [
+            {
+              "description": "The label wrapping the box and label content",
+              "name": "row"
+            },
+            {
+              "description": "The visual checkbox box",
+              "name": "box"
+            },
+            {
+              "description": "The label text container",
+              "name": "label"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The checkbox's label content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_defaultChecked",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_inputElement",
+              "type": {
+                "text": "HTMLInputElement"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_shouldShowValidation",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "checked",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the checkbox is checked.",
+              "attribute": "checked",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the checkbox.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "indeterminate",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Puts the checkbox in the indeterminate visual state. This is a\ndisplay-only, JS-driven state (mirroring the native checkbox\nbehavior) — it doesn't affect `checked` or the submitted form value.",
+              "attribute": "indeterminate",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the checkbox, used for form submission.",
+              "attribute": "name",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the checkbox.",
+              "attribute": "required",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "'on'",
+              "description": "The value submitted when the checkbox is checked.",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "_handleInput",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleInvalid",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_mirrorNativeValidity",
+              "privacy": "private",
+              "description": "Mirrors the native `<input>`'s current `ValidityState` into\n`ElementInternals`, unchanged."
+            },
+            {
+              "kind": "field",
+              "name": "_isShowingError",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "description": "Whether the invalid state should currently be surfaced to the user: a\nvalidation attempt has occurred (native `invalid` event or a `change`).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_displayMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "description": "A human-readable message for the checkbox's current validity state.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback",
+              "description": "Resets the checkbox to whatever was checked when the owning form\nconnected."
+            },
+            {
+              "kind": "method",
+              "name": "setValidity",
+              "parameters": [
+                {
+                  "name": "flags",
+                  "type": {
+                    "text": "ValidityStateFlags"
+                  }
+                },
+                {
+                  "name": "message",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "anchor",
+                  "optional": true,
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                }
+              ],
+              "description": "Sets the checkbox's validity using arbitrary constraint flags,\nmirroring `ElementInternals.setValidity`. Prefer `setCustomValidity`\nfor simple custom error messages."
+            },
+            {
+              "kind": "method",
+              "name": "setCustomValidity",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Sets a custom validation error message. Pass an empty string to clear\nthe custom error and fall back to the checkbox's native constraints."
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "optional": true,
+                  "type": {
+                    "text": "FocusOptions"
+                  }
+                }
+              ],
+              "description": "Moves focus to the checkbox."
+            },
+            {
+              "kind": "method",
+              "name": "blur",
+              "description": "Removes focus from the checkbox."
+            }
+          ],
+          "attributes": [
+            {
+              "name": "checked",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether the checkbox is checked.",
+              "fieldName": "checked"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the checkbox.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "indeterminate",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Puts the checkbox in the indeterminate visual state. This is a\ndisplay-only, JS-driven state (mirroring the native checkbox\nbehavior) — it doesn't affect `checked` or the submitted form value.",
+              "fieldName": "indeterminate"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the checkbox, used for form submission.",
+              "fieldName": "name"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the checkbox.",
+              "fieldName": "required"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "'on'",
+              "description": "The value submitted when the checkbox is checked.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "FormAssociatedElement",
+            "module": "/src/base/FormAssociatedElement.js"
+          },
+          "tagName": "kit-checkbox",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitCheckbox",
+          "declaration": {
+            "name": "KitCheckbox",
+            "module": "src/components/checkbox/checkbox.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-checkbox",
+          "declaration": {
+            "name": "KitCheckbox",
+            "module": "src/components/checkbox/checkbox.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/heading/heading.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Renders a real `hN` element (never `role=\"heading\"`), keeping the\nsemantic document-outline level (`level`) independent of visual size\n(`size`) — set `size` explicitly when a heading needs to look bigger or\nsmaller than its outline position implies. `size` defaults to `titleN`\nfor the matching level (level 1 → `title1`, etc.) rather than a single\nfixed style regardless of level, so the common case (no visual override)\nstill looks like a heading at every level out of the box. `display`\n(the largest step, bigger than any level's own default) is opt-in only —\nset `size=\"display\"` for hero/marquee-style text at any level.",
+          "name": "KitHeading",
+          "cssParts": [
+            {
+              "description": "The rendered hN element",
+              "name": "heading"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The heading text",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "level",
+              "type": {
+                "text": "number"
+              },
+              "default": "2",
+              "description": "The semantic heading level (1–6), rendered as that literal `hN` tag.\nClamped to 1–6.",
+              "attribute": "level"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "HeadingSize | ''"
+              },
+              "default": "''",
+              "description": "Visual size, independent of `level`. Defaults to `titleN` for the\nmatching level when unset.",
+              "attribute": "size"
+            },
+            {
+              "kind": "field",
+              "name": "_resolvedSize",
+              "type": {
+                "text": "HeadingSize"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_resolvedLevel",
+              "type": {
+                "text": "1 | 2 | 3 | 4 | 5 | 6"
+              },
+              "privacy": "private",
+              "readonly": true
+            }
+          ],
+          "attributes": [
+            {
+              "name": "level",
+              "type": {
+                "text": "number"
+              },
+              "default": "2",
+              "description": "The semantic heading level (1–6), rendered as that literal `hN` tag.\nClamped to 1–6.",
+              "fieldName": "level"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "HeadingSize | ''"
+              },
+              "default": "''",
+              "description": "Visual size, independent of `level`. Defaults to `titleN` for the\nmatching level when unset.",
+              "fieldName": "size"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-heading",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitHeading",
+          "declaration": {
+            "name": "KitHeading",
+            "module": "src/components/heading/heading.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-heading",
+          "declaration": {
+            "name": "KitHeading",
+            "module": "src/components/heading/heading.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/icon/icon.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Icon component",
+          "name": "KitIcon",
+          "cssParts": [
+            {
+              "description": "The root SVG element",
+              "name": "root"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "IconName"
+              },
+              "default": "'emoji'",
+              "description": "Icon name from the icon registry",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "size",
+              "type": {
+                "text": "IconSize"
+              },
+              "default": "'default'",
+              "description": "Icon size",
+              "attribute": "size"
+            },
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "IconColor"
+              },
+              "default": "'default'",
+              "description": "Icon color",
+              "attribute": "color"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "name",
+              "type": {
+                "text": "IconName"
+              },
+              "default": "'emoji'",
+              "description": "Icon name from the icon registry",
+              "fieldName": "name"
+            },
+            {
+              "name": "size",
+              "type": {
+                "text": "IconSize"
+              },
+              "default": "'default'",
+              "description": "Icon size",
+              "fieldName": "size"
+            },
+            {
+              "name": "color",
+              "type": {
+                "text": "IconColor"
+              },
+              "default": "'default'",
+              "description": "Icon color",
+              "fieldName": "color"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-icon",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitIcon",
+          "declaration": {
+            "name": "KitIcon",
+            "module": "src/components/icon/icon.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-icon",
+          "declaration": {
+            "name": "KitIcon",
+            "module": "src/components/icon/icon.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/input/input.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Input component",
+          "name": "KitInput",
+          "cssParts": [
+            {
+              "description": "The root element",
+              "name": "root"
+            }
+          ],
+          "slots": [
+            {
+              "description": "Default slot content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_defaultValue",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_isInvalidSyncActive",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_inputElement",
+              "type": {
+                "text": "HTMLInputElement"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_shouldShowValidation",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "customError",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "null",
+              "description": "A custom error message. When set alongside `isInvalid`, this message is\r\nshown instead of the input's native validation message.",
+              "attribute": "customError"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the input",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "icon",
+              "type": {
+                "text": "IconName | undefined"
+              },
+              "description": "Optional icon shown inside the input, from the kit-icon registry.",
+              "attribute": "icon",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "iconColor",
+              "type": {
+                "text": "IconColor"
+              },
+              "default": "'default'",
+              "description": "Color of the icon.",
+              "attribute": "icon-color"
+            },
+            {
+              "kind": "field",
+              "name": "iconPlacement",
+              "type": {
+                "text": "'left' | 'right'"
+              },
+              "default": "'left'",
+              "description": "Which side of the input the icon is shown on.",
+              "attribute": "icon-placement",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "iconSize",
+              "type": {
+                "text": "IconSize"
+              },
+              "default": "'small'",
+              "description": "Size of the icon.",
+              "attribute": "icon-size"
+            },
+            {
+              "kind": "field",
+              "name": "isInvalid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Marks the input as invalid regardless of its native constraints, e.g.\r\nfor server-side or async validation errors. Pair with `customError` to\r\ncontrol the displayed message.",
+              "attribute": "isInvalid",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "label for the input",
+              "attribute": "label"
+            },
+            {
+              "kind": "field",
+              "name": "minLength",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The min length of the input value",
+              "attribute": "minLength"
+            },
+            {
+              "kind": "field",
+              "name": "maxLength",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The max length of the input value",
+              "attribute": "maxLength"
+            },
+            {
+              "kind": "field",
+              "name": "min",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The min value of the input (for number type)",
+              "attribute": "min"
+            },
+            {
+              "kind": "field",
+              "name": "max",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The max value of the input (for number type)",
+              "attribute": "max"
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the input, used for form submission",
+              "attribute": "name",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input pattern for validation",
+              "attribute": "pattern"
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input placeholder",
+              "attribute": "placeholder"
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the input",
+              "attribute": "required",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "'text' | 'password' | 'email' | 'number'"
+              },
+              "default": "'text'",
+              "description": "The input type",
+              "attribute": "type",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input value",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "_handleInput",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleInvalid",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_mirrorNativeValidity",
+              "privacy": "private",
+              "description": "Mirrors the native `<input>`'s current `ValidityState` into\r\n`ElementInternals`, unchanged."
+            },
+            {
+              "kind": "method",
+              "name": "_syncValidity",
+              "privacy": "private",
+              "description": "Applies a declarative `isInvalid` override (if any), then mirrors\r\nvalidity into `ElementInternals`. Called from `willUpdate`/\r\n`firstUpdated` (before render commits) rather than `updated`, so a\r\nsingle render reflects the fresh validity state instead of needing a\r\nfollow-up update cycle.\r\n\r\nOnly clears a custom error that this method itself applied — a\r\nmessage set directly via `setCustomValidity`/`setValidity` is left\r\nalone so it isn't wiped out by the next unrelated re-render."
+            },
+            {
+              "kind": "field",
+              "name": "_isShowingError",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "description": "Whether the invalid state should currently be surfaced to the user:\r\neither a validation attempt has occurred (native `invalid` event or a\r\n`change`), or `isInvalid` was set declaratively.",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_displayMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "description": "A human-readable message for the input's current validity state.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback",
+              "description": "Resets the input to its initial value when the owning form is reset."
+            },
+            {
+              "kind": "method",
+              "name": "setValidity",
+              "parameters": [
+                {
+                  "name": "flags",
+                  "type": {
+                    "text": "ValidityStateFlags"
+                  }
+                },
+                {
+                  "name": "message",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "anchor",
+                  "optional": true,
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                }
+              ],
+              "description": "Sets the input's validity using arbitrary constraint flags, mirroring\r\n`ElementInternals.setValidity`. Prefer `setCustomValidity` for simple\r\ncustom error messages."
+            },
+            {
+              "kind": "method",
+              "name": "setCustomValidity",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Sets a custom validation error message. Pass an empty string to clear\r\nthe custom error and fall back to the input's native constraints."
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "optional": true,
+                  "type": {
+                    "text": "FocusOptions"
+                  }
+                }
+              ],
+              "description": "Moves focus to the input."
+            },
+            {
+              "kind": "method",
+              "name": "blur",
+              "description": "Removes focus from the input."
+            },
+            {
+              "kind": "method",
+              "name": "setSelectionRange",
+              "parameters": [
+                {
+                  "name": "start",
+                  "type": {
+                    "text": "number | null"
+                  }
+                },
+                {
+                  "name": "end",
+                  "type": {
+                    "text": "number | null"
+                  }
+                },
+                {
+                  "name": "direction",
+                  "optional": true,
+                  "type": {
+                    "text": "'forward' | 'backward' | 'none'"
+                  }
+                }
+              ],
+              "description": "Sets the text selection range within the input."
+            }
+          ],
+          "attributes": [
+            {
+              "name": "customError",
+              "type": {
+                "text": "string | null"
+              },
+              "default": "null",
+              "description": "A custom error message. When set alongside `isInvalid`, this message is\r\nshown instead of the input's native validation message.",
+              "fieldName": "customError"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the input",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "icon",
+              "type": {
+                "text": "IconName | undefined"
+              },
+              "description": "Optional icon shown inside the input, from the kit-icon registry.",
+              "fieldName": "icon"
+            },
+            {
+              "name": "icon-color",
+              "type": {
+                "text": "IconColor"
+              },
+              "default": "'default'",
+              "description": "Color of the icon.",
+              "fieldName": "iconColor"
+            },
+            {
+              "name": "icon-placement",
+              "type": {
+                "text": "'left' | 'right'"
+              },
+              "default": "'left'",
+              "description": "Which side of the input the icon is shown on.",
+              "fieldName": "iconPlacement"
+            },
+            {
+              "name": "icon-size",
+              "type": {
+                "text": "IconSize"
+              },
+              "default": "'small'",
+              "description": "Size of the icon.",
+              "fieldName": "iconSize"
+            },
+            {
+              "name": "isInvalid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Marks the input as invalid regardless of its native constraints, e.g.\r\nfor server-side or async validation errors. Pair with `customError` to\r\ncontrol the displayed message.",
+              "fieldName": "isInvalid"
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "label for the input",
+              "fieldName": "label"
+            },
+            {
+              "name": "minLength",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The min length of the input value",
+              "fieldName": "minLength"
+            },
+            {
+              "name": "maxLength",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The max length of the input value",
+              "fieldName": "maxLength"
+            },
+            {
+              "name": "min",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The min value of the input (for number type)",
+              "fieldName": "min"
+            },
+            {
+              "name": "max",
+              "type": {
+                "text": "number | undefined"
+              },
+              "description": "The max value of the input (for number type)",
+              "fieldName": "max"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the input, used for form submission",
+              "fieldName": "name"
+            },
+            {
+              "name": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input pattern for validation",
+              "fieldName": "pattern"
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input placeholder",
+              "fieldName": "placeholder"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the input",
+              "fieldName": "required"
+            },
+            {
+              "name": "type",
+              "type": {
+                "text": "'text' | 'password' | 'email' | 'number'"
+              },
+              "default": "'text'",
+              "description": "The input type",
+              "fieldName": "type"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The input value",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "FormAssociatedElement",
+            "module": "/src/base/FormAssociatedElement.js"
+          },
+          "tagName": "kit-input",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitInput",
+          "declaration": {
+            "name": "KitInput",
+            "module": "src/components/input/input.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-input",
+          "declaration": {
+            "name": "KitInput",
+            "module": "src/components/input/input.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/option/option.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A single selectable option. Not form-associated on its own — pair it\nwith `kit-select`, which owns the listbox, selection, keyboard\nnavigation, and form participation for its slotted `kit-option`\nchildren.",
+          "name": "KitOption",
+          "cssParts": [
+            {
+              "description": "The root element",
+              "name": "option"
+            },
+            {
+              "description": "The label container",
+              "name": "label"
+            },
+            {
+              "description": "The selected-state check icon",
+              "name": "check"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The option's label content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this option is selected.",
+              "attribute": "selected",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this option is disabled.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value submitted when this option is the selected one.",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this option is selected.",
+              "fieldName": "selected"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this option is disabled.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value submitted when this option is the selected one.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-option",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitOption",
+          "declaration": {
+            "name": "KitOption",
+            "module": "src/components/option/option.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-option",
+          "declaration": {
+            "name": "KitOption",
+            "module": "src/components/option/option.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/radio/radio.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A single radio button. Not form-associated on its own — pair it with\n`kit-radio-group`, which owns selection, keyboard navigation, and form\nparticipation for its slotted `kit-radio` children.",
+          "name": "KitRadio",
+          "cssParts": [
+            {
+              "description": "The circular indicator",
+              "name": "radio"
+            },
+            {
+              "description": "The label container",
+              "name": "label"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The radio's label content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "checked",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this radio is checked.",
+              "attribute": "checked",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this radio is disabled.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the radio group this radio belongs to. Informational only\n— grouping and mutual exclusivity are managed by the parent\nkit-radio-group, not by matching `name` values.",
+              "attribute": "name",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value submitted when this radio is the checked one in its group.",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "checked",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this radio is checked.",
+              "fieldName": "checked"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this radio is disabled.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the radio group this radio belongs to. Informational only\n— grouping and mutual exclusivity are managed by the parent\nkit-radio-group, not by matching `name` values.",
+              "fieldName": "name"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value submitted when this radio is the checked one in its group.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-radio",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitRadio",
+          "declaration": {
+            "name": "KitRadio",
+            "module": "src/components/radio/radio.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-radio",
+          "declaration": {
+            "name": "KitRadio",
+            "module": "src/components/radio/radio.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/radio-group/radio-group.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Groups kit-radio children, managing mutual exclusivity, roving-tabindex\nkeyboard navigation, and form participation. kit-radio itself is not\nform-associated — this component owns the checked value and validity for\nthe whole group.",
+          "name": "KitRadioGroup",
+          "cssParts": [
+            {
+              "description": "The root fieldset element",
+              "name": "fieldset"
+            },
+            {
+              "description": "The legend containing the label",
+              "name": "legend"
+            }
+          ],
+          "slots": [
+            {
+              "description": "kit-radio children",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_defaultValue",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_customError",
+              "type": {
+                "text": "string | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_radioElements",
+              "type": {
+                "text": "KitRadio[]"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_shouldShowValidation",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Accessible label shown in the fieldset's legend.",
+              "attribute": "label"
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the radio group, used for form submission.",
+              "attribute": "name",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the radio group — at least one radio must be checked.",
+              "attribute": "required",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently checked radio. Setting this externally\nchecks the matching radio and unchecks the others.",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "_enabledRadios",
+              "type": {
+                "text": "KitRadio[]"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_checkedRadio",
+              "type": {
+                "text": "KitRadio | undefined"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_isShowingError",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "description": "Whether the invalid state should currently be surfaced to the user:\na validation attempt has occurred (native `invalid` event, or focus\nleft the group).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_displayMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "description": "A human-readable message for the group's current validity state.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_handleInvalid",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleFocusOut",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "FocusEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleSlotChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_selectRadio",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "radio",
+                  "type": {
+                    "text": "KitRadio"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_applyValueToRadios",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_updateTabIndexes",
+              "privacy": "private",
+              "description": "Ensures exactly one enabled radio has tabindex=\"0\" (the checked one,\nor the first enabled one if none are checked) so the group is\nreachable — and internally navigable — via Tab."
+            },
+            {
+              "kind": "method",
+              "name": "_syncValidity",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback",
+              "description": "Resets the group to whichever radio was checked (or value set) when\nthe owning form connected."
+            },
+            {
+              "kind": "method",
+              "name": "setValidity",
+              "parameters": [
+                {
+                  "name": "flags",
+                  "type": {
+                    "text": "ValidityStateFlags"
+                  }
+                },
+                {
+                  "name": "message",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "anchor",
+                  "optional": true,
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                }
+              ],
+              "description": "Sets the group's validity using arbitrary constraint flags, mirroring\n`ElementInternals.setValidity`. Prefer `setCustomValidity` for simple\ncustom error messages."
+            },
+            {
+              "kind": "method",
+              "name": "setCustomValidity",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Sets a custom validation error message. Pass an empty string to clear\nthe custom error and fall back to the group's `required` constraint."
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Accessible label shown in the fieldset's legend.",
+              "fieldName": "label"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the radio group, used for form submission.",
+              "fieldName": "name"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the radio group — at least one radio must be checked.",
+              "fieldName": "required"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently checked radio. Setting this externally\nchecks the matching radio and unchecks the others.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "FormAssociatedElement",
+            "module": "/src/base/FormAssociatedElement.js"
+          },
+          "tagName": "kit-radio-group",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitRadioGroup",
+          "declaration": {
+            "name": "KitRadioGroup",
+            "module": "src/components/radio-group/radio-group.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-radio-group",
+          "declaration": {
+            "name": "KitRadioGroup",
+            "module": "src/components/radio-group/radio-group.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/select/select.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A single-choice select built from kit-dropdown (positioning, dismiss,\ndisabled propagation) and slotted kit-option children (the listbox).\nkit-select owns the listbox semantics on top: roving-tabindex keyboard\nnavigation, type-ahead, selection, and form participation.",
+          "name": "KitSelect",
+          "cssParts": [
+            {
+              "description": "The label element",
+              "name": "label"
+            },
+            {
+              "description": "The trigger button",
+              "name": "trigger"
+            },
+            {
+              "description": "The listbox container",
+              "name": "listbox"
+            }
+          ],
+          "slots": [
+            {
+              "description": "kit-option children",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_defaultValue",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_customError",
+              "type": {
+                "text": "string | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_searchBuffer",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "_searchTimeout",
+              "type": {
+                "text": "number | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_optionElements",
+              "type": {
+                "text": "KitOption[]"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_dropdownElement",
+              "type": {
+                "text": "KitDropdown"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_isOpen",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_shouldShowValidation",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Accessible label shown above the trigger.",
+              "attribute": "label"
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the select, used for form submission.",
+              "attribute": "name",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Select an option'",
+              "description": "Text shown in the trigger when nothing is selected.",
+              "attribute": "placeholder"
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the select — an option must be selected.",
+              "attribute": "required",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the select.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently selected option. Setting this externally\nselects the matching option and deselects the others.",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "_enabledOptions",
+              "type": {
+                "text": "KitOption[]"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_selectedOption",
+              "type": {
+                "text": "KitOption | undefined"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_isShowingError",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "description": "Whether the invalid state should currently be surfaced to the user:\na validation attempt has occurred (native `invalid` event, or focus\nleft the component).",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_displayMessage",
+              "type": {
+                "text": "string"
+              },
+              "privacy": "private",
+              "description": "A human-readable message for the select's current validity state.",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_handleInvalid",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleFocusOut",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "FocusEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleDropdownToggle",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleTriggerKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleListboxClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleListboxKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_updateSearchBuffer",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "key",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_selectByTypeAhead",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_selectOption",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option",
+                  "type": {
+                    "text": "KitOption"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_setActiveOption",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "option",
+                  "type": {
+                    "text": "KitOption"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_focusSelectedOrFirstOption",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_applyValueToOptions",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_updateTabIndexes",
+              "privacy": "private",
+              "description": "Ensures exactly one enabled option has tabindex=\"0\" (the selected\none, or the first enabled one if none is selected) so the listbox\nis reachable — and internally navigable — via Tab."
+            },
+            {
+              "kind": "method",
+              "name": "_handleSlotChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_syncValidity",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "getUpdateComplete",
+              "privacy": "protected",
+              "return": {
+                "type": {
+                  "text": "Promise<boolean>"
+                }
+              },
+              "description": "kit-dropdown has its own independent update cycle — closing it (e.g.\nfrom `_selectOption`) schedules a Lit update on kit-dropdown that\n`super.updateComplete` doesn't know about, since it's a separate\nelement. Without this, `await selectEl.updateComplete` can resolve\nbefore kit-dropdown's own close/focus-return logic has actually run."
+            },
+            {
+              "kind": "method",
+              "name": "formResetCallback",
+              "description": "Resets the select to whichever option was selected (or value set)\nwhen the owning form connected."
+            },
+            {
+              "kind": "method",
+              "name": "setValidity",
+              "parameters": [
+                {
+                  "name": "flags",
+                  "type": {
+                    "text": "ValidityStateFlags"
+                  }
+                },
+                {
+                  "name": "message",
+                  "optional": true,
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "anchor",
+                  "optional": true,
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                }
+              ],
+              "description": "Sets the select's validity using arbitrary constraint flags,\nmirroring `ElementInternals.setValidity`. Prefer `setCustomValidity`\nfor simple custom error messages."
+            },
+            {
+              "kind": "method",
+              "name": "setCustomValidity",
+              "parameters": [
+                {
+                  "name": "message",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Sets a custom validation error message. Pass an empty string to clear\nthe custom error and fall back to the select's `required` constraint."
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "optional": true,
+                  "type": {
+                    "text": "FocusOptions"
+                  }
+                }
+              ],
+              "description": "Moves focus to the trigger."
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Accessible label shown above the trigger.",
+              "fieldName": "label"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The name of the select, used for form submission.",
+              "fieldName": "name"
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Select an option'",
+              "description": "Text shown in the trigger when nothing is selected.",
+              "fieldName": "placeholder"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "required state of the select — an option must be selected.",
+              "fieldName": "required"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "disabled state of the select.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently selected option. Setting this externally\nselects the matching option and deselects the others.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "FormAssociatedElement",
+            "module": "/src/base/FormAssociatedElement.js"
+          },
+          "tagName": "kit-select",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitSelect",
+          "declaration": {
+            "name": "KitSelect",
+            "module": "src/components/select/select.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-select",
+          "declaration": {
+            "name": "KitSelect",
+            "module": "src/components/select/select.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/tab/tab.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A single tab. Not interactive selection logic on its own beyond its own\nclick/keydown — pair it with `kit-tab-group`, which owns mutual\nexclusivity, roving-tabindex keyboard navigation, and orientation for its\nslotted `kit-tab` children.\n\nkit-tab does not manage any associated panel content. Pair each tab with\nits panel elsewhere in the page using a standard `aria-controls` attribute\n(e.g. `<kit-tab aria-controls=\"panel-1\">`) and switch panel visibility\noff the group's `value`/`change` event.",
+          "name": "KitTab",
+          "cssParts": [
+            {
+              "description": "The tab element",
+              "name": "tab"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The tab's label content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this tab is the selected one in its group.",
+              "attribute": "selected",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this tab is disabled.",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "An identifier for this tab, surfaced as kit-tab-group's `value` when\nthis tab is selected.",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "selected",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this tab is the selected one in its group.",
+              "fieldName": "selected"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Whether this tab is disabled.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "An identifier for this tab, surfaced as kit-tab-group's `value` when\nthis tab is selected.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-tab",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitTab",
+          "declaration": {
+            "name": "KitTab",
+            "module": "src/components/tab/tab.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-tab",
+          "declaration": {
+            "name": "KitTab",
+            "module": "src/components/tab/tab.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/tab-group/tab-group.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Groups kit-tab children, managing mutual exclusivity and roving-tabindex\nkeyboard navigation. kit-tab-group always keeps exactly one enabled tab\nselected (falling back to the first enabled tab if none is marked\n`selected`), matching the tablist widget's expected behavior — unlike\nkit-radio-group, where \"nothing checked\" is a valid state.\n\nkit-tab-group does not render or manage panel content. Pair each tab with\na panel elsewhere in the page (via `aria-controls` on the tab) and switch\npanel visibility off the `change` event / `value` property.",
+          "name": "KitTabGroup",
+          "cssParts": [
+            {
+              "description": "The element carrying the tabs",
+              "name": "tablist"
+            }
+          ],
+          "slots": [
+            {
+              "description": "kit-tab children",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_tabElements",
+              "type": {
+                "text": "KitTab[]"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently selected tab. Setting this externally\nselects the matching tab and deselects the others.",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "_enabledTabs",
+              "type": {
+                "text": "KitTab[]"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "_selectedTab",
+              "type": {
+                "text": "KitTab | undefined"
+              },
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_handleSlotChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_handleClick",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "Event"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_handleKeydown",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "event",
+                  "type": {
+                    "text": "KeyboardEvent"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_selectTab",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "tab",
+                  "type": {
+                    "text": "KitTab"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_applyValueToTabs",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_updateTabIndexes",
+              "privacy": "private",
+              "description": "Ensures exactly one enabled tab has tabindex=\"0\" (the selected one, or\nthe first enabled one if none are selected) so the group is reachable\n— and internally navigable — via Tab."
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The value of the currently selected tab. Setting this externally\nselects the matching tab and deselects the others.",
+              "fieldName": "value"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-tab-group",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitTabGroup",
+          "declaration": {
+            "name": "KitTabGroup",
+            "module": "src/components/tab-group/tab-group.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-tab-group",
+          "declaration": {
+            "name": "KitTabGroup",
+            "module": "src/components/tab-group/tab-group.component.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/tab-panel/tab-panel.component.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "The content panel associated with a `kit-tab`. Not slotted inside\n`kit-tab-group` — pairs with it by id via the `tab-group` attribute\n(the same idea as a native `<label for>`), so a panel can live anywhere\nin the page relative to the tabs that control it.\n\nkit-tab-panel hides itself (via the standard `hidden` attribute)\nwhenever its `value` doesn't match the paired kit-tab-group's current\n`value`, and wires `aria-controls`/`aria-labelledby` between the\nmatching kit-tab and itself automatically — without overwriting either\nif a consumer already set one explicitly.\n\nThe `tab-group` attribute is resolved once, when the panel connects;\nit isn't reactive to being changed afterward.",
+          "name": "KitTabPanel",
+          "cssParts": [
+            {
+              "description": "The panel element",
+              "name": "panel"
+            }
+          ],
+          "slots": [
+            {
+              "description": "The panel's content",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "_group",
+              "type": {
+                "text": "KitTabGroup | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "_fallbackId",
+              "privacy": "private",
+              "default": "`kit-tab-panel-${++panelIdCounter}`"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifies which kit-tab this panel belongs to — matched against a\nkit-tab's `value` within the paired group.",
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "tabGroup",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The id of the kit-tab-group this panel is paired with.",
+              "attribute": "tab-group"
+            },
+            {
+              "kind": "field",
+              "name": "_handleChange",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_syncVisibility",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_syncLabelling",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_connectToGroup",
+              "privacy": "private"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Identifies which kit-tab this panel belongs to — matched against a\nkit-tab's `value` within the paired group.",
+              "fieldName": "value"
+            },
+            {
+              "name": "tab-group",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "The id of the kit-tab-group this panel is paired with.",
+              "fieldName": "tabGroup"
+            }
+          ],
+          "superclass": {
+            "name": "KitElement",
+            "module": "/src/base/KitElement.js"
+          },
+          "tagName": "kit-tab-panel",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KitTabPanel",
+          "declaration": {
+            "name": "KitTabPanel",
+            "module": "src/components/tab-panel/tab-panel.component.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "kit-tab-panel",
+          "declaration": {
+            "name": "KitTabPanel",
+            "module": "src/components/tab-panel/tab-panel.component.ts"
           }
         }
       ]

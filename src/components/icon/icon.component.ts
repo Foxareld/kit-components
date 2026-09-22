@@ -32,7 +32,7 @@ export class KitIcon extends KitElement {
 	 * Icon name from the icon registry
 	 */
 	@property({ type: String })
-	name: IconName = 'star';
+	name: IconName = 'emoji';
 
 	/**
 	 * Icon size

@@ -1,0 +1,219 @@
+[
+  {
+    "id": "accessibility-patterns.md#why-do-arrow-keys-immediately-select-a-tab-in-kit-tab-group-",
+    "text": "## \"Why do arrow keys immediately select a tab in `kit-tab-group`, instead of just moving focus?\"\n\n\nWAI-ARIA APG allows either activation model for tabs — automatic (arrow keys move focus and select in the same step) or manual (arrow keys only move focus, a separate Enter/Space press selects) — recommending manual activation mainly when moving to a tab triggers an expensive operation, like a network fetch for panel content.\n\n`kit-tab-group` uses automatic activation: arrow keys move focus and select the tab in the same step, and Space/Enter also select for when a tab is reached via Tab key rather than arrows. Kit doesn't know what a given consumer's panel switch costs, but automatic activation is the more common, expected default for tabs, and it matches `kit-radio-group`'s existing behavior — keeping keyboard interaction consistent across Kit's grouped-selection components rather than introducing a second interaction model.",
+    "source": "accessibility-patterns.md",
+    "tag": "accessibility",
+    "audience": "consumer"
+  },
+  {
+    "id": "accessibility-patterns.md#why-does-kit-tab-group-support-home-end-when-kit-radio-group",
+    "text": "## \"Why does `kit-tab-group` support Home/End when `kit-radio-group` doesn't?\"\n\n\n`kit-radio-group` has no Home/End support, but the WAI-ARIA APG tabs pattern specifically calls for Home/End to jump to the first/last tab as part of a tablist's expected keyboard support — unlike the radio pattern as Kit implements it.\n\nHome/End handling was added to `kit-tab-group`'s keydown handler, jumping to the first/last enabled tab. This is spec-required behavior for the tablist widget specifically, not a gap being carried over for consistency's sake, and it was cheap to add once arrow-key navigation already existed.",
+    "source": "accessibility-patterns.md",
+    "tag": "accessibility",
+    "audience": "consumer"
+  },
+  {
+    "id": "accessibility-patterns.md#kit-tab-panel-starts-hidden-synchronously-before-its-paired-",
+    "text": "## kit-tab-panel starts hidden synchronously, before its paired group resolves\n\n\nResolving the paired `kit-tab-group` and reading its `value` happens asynchronously (`await group.updateComplete`, since the group may not have finished picking its own default-selected tab yet). If a panel defaulted to visible until that resolution finished, multiple panels could theoretically render visible together for that brief window.\n\n`kit-tab-panel` now sets `hidden = true` synchronously in `connectedCallback()`, before the async group resolution even starts, then corrects it once the real value is known — cheap insurance that \"at most one panel visible\" holds at every observable point, rather than relying on the resolution being fast enough in practice to not matter.",
+    "source": "accessibility-patterns.md",
+    "tag": "accessibility",
+    "audience": "internal"
+  },
+  {
+    "id": "accessibility-patterns.md#do-i-need-to-manually-wire-aria-controls-aria-labelledby-bet",
+    "text": "## \"Do I need to manually wire aria-controls/aria-labelledby between kit-tab and kit-tab-panel?\"\n\n\n`kit-tab`/`kit-tab-group` originally left `aria-controls` wiring as a manual task for the consumer. Once `kit-tab-panel` existed and already had to find its matching `kit-tab` (by `value`) to determine visibility, it had everything needed to close that gap automatically.\n\nOn connecting to its paired group, `kit-tab-panel` now finds the `kit-tab` whose `value` matches its own, assigns ids to itself and/or the tab if either is missing, and sets `aria-controls` on the tab and `aria-labelledby` on itself — but only if the corresponding attribute isn't already present, so your own explicit wiring (or a pre-set `id`) is never clobbered. This is the kind of accessibility completeness a dedicated panel component should provide by default, and the \"don't overwrite\" guard keeps it safe if you want your own ids/attributes for other reasons, like deep-linking to a specific panel.",
+    "source": "accessibility-patterns.md",
+    "tag": "accessibility",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#i-set-disabletrigger-expecting-the-trigger-to-look-disabled-",
+    "text": "## \"I set disableTrigger expecting the trigger to look disabled, but it still looks interactive\"\r\n\r\n\r\n\r\ndisableTrigger and disabled are not the same thing, on purpose. disableTrigger only turns off the automatic click-to-toggle wiring, it exists for triggers that open the dropdown some other way (a search input with a separate icon button, for example), and the trigger itself stays fully interactive. It was never meant to convey a disabled visual state.\r\n\r\nIf you actually want the dropdown unopenable and the trigger showing disabled styling, use disabled instead. It blocks both trigger clicks and toggle() from opening the dropdown, and sets disabled/aria-disabled on the assigned trigger so components like kit-button render their own disabled look. The two properties are kept separate deliberately, so disableTrigger doesn't have to guess whether you also wanted it visually disabled.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#forcing-open-false-on-disable-in-kit-dropdown-moved-to-willu",
+    "text": "## Forcing open=false on disable in kit-dropdown moved to willUpdate()\r\n\r\n\r\n\r\nWhen `disabled` becomes true while the dropdown is open, it needs to close. Setting `this.open = false` inside `updated()` works, but mutating a reactive property inside `updated()` schedules a second, visible update cycle (Lit's \"change-in-update\" warning). Moved the `disabled → open = false` forcing into `willUpdate()` instead, so the same render cycle already reflects the closed state.\r\n\r\n`willUpdate()` runs before Lit commits the render, so a property mutated there is visible to the rest of that same update pass — no extra cycle, no warning. Confirmed empirically: after the fix, `dropdown.test.ts`'s console shows no change-in-update warning, unlike a few other components in this repo that have one from an unrelated (accepted) mount-time cascade.",
+    "source": "architecture-decisions.md",
+    "tag": "forms",
+    "audience": "internal"
+  },
+  {
+    "id": "architecture-decisions.md#form-associated-components-compute-validity-in-willupdate-no",
+    "text": "## Form-associated components compute validity in willUpdate(), not updated()\r\n\r\n\r\n\r\nkit-input originally mirrored native validity in updated(). Since updated() runs after Lit commits the render, any state set there doesn't show up until a second cycle, the invalid-state UI lagged a full render behind the actual state change. Worse, the resulting repeating change-in-update cascade combined badly with mocha's fixture teardown and hung Web Test Runner indefinitely instead of failing cleanly, that cost real debugging time before the lifecycle hook turned out to be the actual cause.\r\n\r\nFix: compute and mirror validity in willUpdate() for every form-associated component. internals.setFormValue() stays in updated(), since it isn't render-dependent and doesn't have this problem. The one accepted exception is kit-radio-group's firstUpdated() read of slotted children, a single bounded mount-time cascade, not a recurring one, which @open-wc/testing's fixture() already handles correctly.",
+    "source": "architecture-decisions.md",
+    "tag": "forms",
+    "audience": "internal"
+  },
+  {
+    "id": "architecture-decisions.md#public-validity-mutating-methods-on-form-associated-componen",
+    "text": "## Public validity-mutating methods on form-associated components now call requestUpdate()\r\n\r\n\r\n\r\n`setCustomValidity()` and other methods that mutate `ElementInternals` directly kept intermittently failing to update the DOM, even after fixing the `willUpdate()` cascade above. `checkValidity()` reflected the change correctly, but the invalid-state UI didn't repaint. It only appeared to work in isolated tests because an unrelated property change happened to trigger a render at the same time, and it silently failed the moment a form called `setCustomValidity()` a second time with nothing else changing.\r\n\r\nAny public method that mutates `ElementInternals` directly (`setCustomValidity`, a public `setValidity`) now ends with `this.requestUpdate()`. Those calls don't touch a reactive `@property`/`@state`, so Lit has no way to know a re-render is needed on its own — the change is real and immediately visible to `checkValidity()`, but invisible in the DOM until something else happens to trigger a render.",
+    "source": "architecture-decisions.md",
+    "tag": "forms",
+    "audience": "internal"
+  },
+  {
+    "id": "architecture-decisions.md#i-expected-kit-select-to-take-an-options-array-but-it-wants-",
+    "text": "## \"I expected `kit-select` to take an `options` array, but it wants slotted `kit-option` elements instead\"\r\n\r\n\r\n\r\nA plain JS array can't be set declaratively from an HTML attribute, only through a JS property binding, so the `options={[...]}` prop shape from the design system's React spec doesn't translate cleanly to a framework-agnostic web component.\r\n\r\n`kit-select` takes slotted `kit-option` children instead, the same shape as `kit-radio-group` + `kit-radio`. `kit-select` owns the listbox, roving-tabindex keyboard navigation, selection, and form participation; `kit-option` is presentational only, mirroring `kit-radio`'s split. This reuses Kit's own established, tested, accessible pattern for a \"collection of choices\" rather than introducing a second, React-flavored convention for one component — the design doc's prop shape is meant as a translation aid, not a literal API to port.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#why-doesn-t-kit-select-filter-options-as-i-type",
+    "text": "## \"Why doesn't `kit-select` filter options as I type?\"\r\n\r\n\r\n\r\n`kit-select` is a simple non-editable, button-triggered listbox, not an editable combobox with as-you-type filtering — that's what the Kit design system's own spec for Select actually draws, so that's what got built: a `<button>` trigger, no text input, no filtering. Type-ahead is still supported (typing jumps to a matching option, it doesn't filter the list), since that's standard listbox keyboard behavior, not a search feature.\r\n\r\nA filtering variant would be scope creep against the actual design intent — a searchable select is a genuinely different, larger component. It can be added later as an opt-in if a real consumer need shows up.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#kit-select-s-getupdatecomplete-now-awaits-kit-dropdown-s-own",
+    "text": "## kit-select's getUpdateComplete() now awaits kit-dropdown's own update cycle\r\n\r\n\r\n\r\n`select.test.ts` hung the whole file indefinitely, the same way `dropdown.test.ts` once did. `kit-select` closes its internal `kit-dropdown` by setting `dropdownEl.open = false`, which schedules a Lit update on `kit-dropdown` — a separate custom element with its own independent update cycle. `await selectEl.updateComplete` only waits for `kit-select`'s own update, not its child's, so a test could observe `document.activeElement` before `kit-dropdown`'s own close/focus-return logic had actually run, and that race broke the next test's fixture teardown, producing the hang.\r\n\r\n`kit-select` now overrides `getUpdateComplete()` to additionally await the internal `kit-dropdown` element's own `updateComplete`, per Lit's documented pattern for awaiting descendant updates. This fixes the race for every consumer, not just tests — `await selectEl.updateComplete` now genuinely means kit-select and everything it just told kit-dropdown to do have both settled. Fixing it only in test helpers would have left the same footgun for real app code.",
+    "source": "architecture-decisions.md",
+    "tag": "forms",
+    "audience": "internal"
+  },
+  {
+    "id": "architecture-decisions.md#kit-tab-group-extends-kitelement-directly-not-formassociated",
+    "text": "## kit-tab-group extends KitElement directly, not FormAssociatedElement\r\n\r\n\r\n\r\n`kit-tab-group`/`kit-tab` were built following `kit-radio-group`/`kit-radio` as the structural reference — slotted children, delegated click/keydown on the parent, roving tabindex — which raised the question of whether to also extend `FormAssociatedElement` like radio-group does.\r\n\r\nBoth extend `KitElement` directly instead: no validity API, no `formResetCallback`, no form value submission. Tabs aren't a form control — a tablist doesn't submit a value to a server, it's a navigation/disclosure widget — so `FormAssociatedElement`'s validity boilerplate would be dead API surface on a component that can never be invalid or required. What's worth reusing from radio-group is the slotted-children-plus-delegated-events shape, not the form plumbing on top of it.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "internal"
+  },
+  {
+    "id": "architecture-decisions.md#why-does-kit-tab-group-always-show-one-tab-as-active-even-wi",
+    "text": "## \"Why does `kit-tab-group` always show one tab as active, even without a selected attribute anywhere?\"\r\n\r\n\r\n\r\n`kit-radio-group` allows a valid \"nothing checked\" state, which matters for optional form fields, but tabs don't have an equivalent \"nothing selected\" state — a tablist with no visible active tab isn't a state any real tab UI has.\r\n\r\nIf no slotted `kit-tab` has `selected` set and no `value` is supplied, `kit-tab-group` selects the first enabled tab itself on `firstUpdated()`. Consumers shouldn't have to remember to mark one tab `selected` for the component to render sensibly — a tablist with a roving tabindex needs a tabbable tab regardless, so defaulting to the first enabled one keeps both the visuals and the keyboard entry point correct out of the box.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#does-kit-tab-group-support-vertical-tabs",
+    "text": "## \"Does `kit-tab-group` support vertical tabs?\"\r\n\r\n\r\n\r\nWAI-ARIA APG's tabs pattern supports a vertical orientation (`aria-orientation`, Up/Down arrow keys instead of Left/Right), and an `orientation` property was built to support it, but there was no concrete consumer need for vertical tabs driving this — it was added speculatively because the spec allows for it.\r\n\r\nThe `orientation` property was removed entirely. `kit-tab-group` only supports horizontal tabs: Left/Right arrow keys, no `aria-orientation` attribute, no vertical CSS variant. Building for a layout variant nothing currently needs is speculative surface area worth avoiding, and it's easy to reintroduce later — the arrow-key-set and CSS branching were both small and isolated — if a real vertical-tabs need shows up.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#how-do-i-connect-a-kit-tab-panel-to-its-kit-tab-group",
+    "text": "## \"How do I connect a `kit-tab-panel` to its `kit-tab-group`?\"\r\n\r\n\r\n\r\n`kit-tab-panel` is a standalone element, not a slotted child of `kit-tab-group`. It pairs with a group via a `tab-group=\"<id>\"` attribute — the same idea as a native `<label for>` — resolved once via `document.getElementById` when the panel connects, so it doesn't have to be adjacent to the group in the DOM.\r\n\r\nTab panels commonly need to live somewhere other than right next to the tablist: tabs in a page header with panel content lower in the layout, or panels rendered by an entirely different part of the app. Slotting panels into `kit-tab-group` would also mean the group's slot mixes two different child types (`kit-tab` and `kit-tab-panel`), complicating `@queryAssignedElements`-based child discovery for no real benefit. An id-reference keeps `kit-tab-group` unaware panels exist at all — it still only manages tabs.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "consumer"
+  },
+  {
+    "id": "architecture-decisions.md#kit-tab-group-now-dispatches-change-for-externally-set-value",
+    "text": "## kit-tab-group now dispatches change for externally-set value, not just interactive selection\r\n\r\n\r\n\r\n`kit-tab-group`'s `updated()` already re-synced slotted tabs when `value` was set externally (`group.value = 'x'`), mirroring `kit-radio-group`'s equivalent path, but that path never dispatched `change` — only the internal `_selectTab()` (click/keyboard) did. Building `kit-tab-panel`, which listens for `change` to know when to swap visibility, surfaced this as a real gap: a panel would go stale if a consumer drove tab selection by setting `.value` directly instead of clicking or using the keyboard.\r\n\r\n`updated()` now also dispatches `change` when it detects and applies an externally-set `value`, guarded so it can't double-fire alongside `_selectTab()`'s own dispatch. `kit-tab-group`'s own docs already promise consumers can switch panel visibility off the `change` event, and that contract wasn't actually true for the programmatic-selection case until this fix. This wasn't carried back into `kit-radio-group`: a form doesn't need a `change` event for every programmatic value assignment the way a panel-switcher does, and radio-group's existing asymmetry is established, tested behavior its own consumers already depend on.",
+    "source": "architecture-decisions.md",
+    "tag": "architecture",
+    "audience": "internal"
+  },
+  {
+    "id": "custom-elements.json#kit-accordion",
+    "text": "kit-accordion — Groups kit-accordion-item children, adding arrow-key navigation between\nheaders (Up/Down move focus, Home/End jump to the ends — Tab still moves\nthrough every header in document order, unlike kit-tab-group's roving\ntabindex, since accordion headers are each independently tabbable per the\nARIA APG accordion pattern) and, opt-in via `single`, mutual exclusivity.\n\nItems are independently functional without a parent kit-accordion at all\n— multiple can be open at once by default. Set `single` to close every\nother item whenever one opens, matching kit-tab-group's behavior.\n\n`heading-level` is set once on the group and pushed down to every item's\nown `heading-level`, overwriting it — so a consumer configures the\noutline position for the whole accordion in one place instead of\nrepeating it per item.. Attributes/properties: single (boolean): When true, opening one item closes every other item in the group.\nWhen false (the default), items open and close independently.; heading-level (number): The heading level applied to every item's header, overwriting each\nitem's own `heading-level`. Set this to match where the accordion\nsits in the surrounding page's heading outline.. Slots: default: kit-accordion-item children.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-accordion-item",
+    "text": "kit-accordion-item — A single collapsible header/panel pair. Self-contained and independently\nusable — it owns its own `open` state and toggles itself on click, so it\nworks standalone without a parent `kit-accordion`.\n\nPair several under `kit-accordion` for arrow-key navigation between\nheaders and, opt-in via `single`, mutual exclusivity. `kit-tab-panel`'s\ndecoupled-by-id pairing model doesn't apply here: a header and its panel\nare always a co-located pair, never positionally separate the way a tab\nstrip and its panel can be.. Attributes/properties: open (boolean): Whether the panel is expanded.; disabled (boolean): Whether this item is disabled — the header button can't be toggled.; value (string): An identifier for this item, surfaced in the `toggle` event detail.; heading-level (number): The level of the `kit-heading` wrapping the trigger button. Set this\nto match where the accordion sits in the surrounding page's heading\noutline (defaults to 3, i.e. nested under a page's h2 sections). When\nthis item is inside a `kit-accordion`, the group's own `heading-level`\noverwrites this on every item — set it there instead of per item.. Slots: header: The header content (the always-visible clickable label); default: The panel content, shown when open. Events: change: Fired on toggle, `detail: { open, value }`.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-dropdown",
+    "text": "kit-dropdown — Anchors floating content to a trigger and shows/hides it via the native\nPopover API — light-dismiss (click-outside), Escape-to-close, and\ntop-layer rendering (so it's never clipped by an ancestor's overflow)\nall come from the platform instead of custom listeners. Positioning\nuses CSS anchor positioning where supported; browsers without it get a\nplain, non-flipping position computed once when the dropdown opens\n(not tracked continuously on scroll/resize).\n\nContent-agnostic: it only owns opening/closing and positioning. Any\nkeyboard handling, search, or selection logic belongs to whatever is\nslotted in — a menu, a form, plain text.. Attributes/properties: open (boolean): Whether the dropdown's content is open. Reflects to an attribute,\nthe same pattern as native `<details open>` — set it directly to\nopen/close the dropdown programmatically.; disable-trigger (boolean): When true, clicking the trigger slot no longer opens/closes the\ndropdown on its own — set `open` or call `toggle()` yourself\ninstead. Useful when the trigger has its own buttons or other\ninteractive bits that shouldn't always open the dropdown.\n\nThe trigger stays fully clickable and focusable either way — this\nonly turns off the automatic open/close wiring, it doesn't disable\nthe trigger itself. For that, use `disabled` instead.; disabled (boolean): Disables the dropdown entirely: it can't be opened (via the trigger\nor `toggle()`), and the `disabled` attribute is set on the assigned\ntrigger element(s) so a component like kit-button shows its own\ndisabled styling.. Slots: trigger: The element that opens/closes the dropdown on click; default: The dropdown's content. Events: toggle: .",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-button",
+    "text": "kit-button — A customizable button component built with Lit. Attributes/properties: variant ('primary' | 'secondary' | 'ghost'): The visual style variant of the button; size ('small' | 'medium' | 'large'): The size of the button; disabled (boolean): Whether the button is disabled; full-width (boolean): Whether the button should take full width of its container; type ('button' | 'submit' | 'reset'): The button type attribute. Slots: default: The button content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-checkbox",
+    "text": "kit-checkbox — Checkbox component. Wraps a real native `<input type=\"checkbox\">` so it\ngets native keyboard/click/indeterminate behavior for free — its\nValidityState is mirrored into ElementInternals, same as kit-input.. Attributes/properties: checked (boolean): Whether the checkbox is checked.; disabled (boolean): disabled state of the checkbox.; indeterminate (boolean): Puts the checkbox in the indeterminate visual state. This is a\ndisplay-only, JS-driven state (mirroring the native checkbox\nbehavior) — it doesn't affect `checked` or the submitted form value.; name (string): The name of the checkbox, used for form submission.; required (boolean): required state of the checkbox.; value (string): The value submitted when the checkbox is checked.. Slots: default: The checkbox's label content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-heading",
+    "text": "kit-heading — Renders a real `hN` element (never `role=\"heading\"`), keeping the\nsemantic document-outline level (`level`) independent of visual size\n(`size`) — set `size` explicitly when a heading needs to look bigger or\nsmaller than its outline position implies. `size` defaults to `titleN`\nfor the matching level (level 1 → `title1`, etc.) rather than a single\nfixed style regardless of level, so the common case (no visual override)\nstill looks like a heading at every level out of the box. `display`\n(the largest step, bigger than any level's own default) is opt-in only —\nset `size=\"display\"` for hero/marquee-style text at any level.. Attributes/properties: level (number): The semantic heading level (1–6), rendered as that literal `hN` tag.\nClamped to 1–6.; size (HeadingSize | ''): Visual size, independent of `level`. Defaults to `titleN` for the\nmatching level when unset.. Slots: default: The heading text.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-icon",
+    "text": "kit-icon — Icon component. Attributes/properties: name (IconName): Icon name from the icon registry; size (IconSize): Icon size; color (IconColor): Icon color.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-input",
+    "text": "kit-input — Input component. Attributes/properties: customError (string | null): A custom error message. When set alongside `isInvalid`, this message is\r\nshown instead of the input's native validation message.; disabled (boolean): disabled state of the input; icon (IconName | undefined): Optional icon shown inside the input, from the kit-icon registry.; icon-color (IconColor): Color of the icon.; icon-placement ('left' | 'right'): Which side of the input the icon is shown on.; icon-size (IconSize): Size of the icon.; isInvalid (boolean): Marks the input as invalid regardless of its native constraints, e.g.\r\nfor server-side or async validation errors. Pair with `customError` to\r\ncontrol the displayed message.; label (string): label for the input; minLength (number | undefined): The min length of the input value; maxLength (number | undefined): The max length of the input value; min (number | undefined): The min value of the input (for number type); max (number | undefined): The max value of the input (for number type); name (string): The name of the input, used for form submission; pattern (string): The input pattern for validation; placeholder (string): The input placeholder; required (boolean): required state of the input; type ('text' | 'password' | 'email' | 'number'): The input type; value (string): The input value. Slots: default: Default slot content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-option",
+    "text": "kit-option — A single selectable option. Not form-associated on its own — pair it\nwith `kit-select`, which owns the listbox, selection, keyboard\nnavigation, and form participation for its slotted `kit-option`\nchildren.. Attributes/properties: selected (boolean): Whether this option is selected.; disabled (boolean): Whether this option is disabled.; value (string): The value submitted when this option is the selected one.. Slots: default: The option's label content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-radio",
+    "text": "kit-radio — A single radio button. Not form-associated on its own — pair it with\n`kit-radio-group`, which owns selection, keyboard navigation, and form\nparticipation for its slotted `kit-radio` children.. Attributes/properties: checked (boolean): Whether this radio is checked.; disabled (boolean): Whether this radio is disabled.; name (string): The name of the radio group this radio belongs to. Informational only\n— grouping and mutual exclusivity are managed by the parent\nkit-radio-group, not by matching `name` values.; value (string): The value submitted when this radio is the checked one in its group.. Slots: default: The radio's label content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-radio-group",
+    "text": "kit-radio-group — Groups kit-radio children, managing mutual exclusivity, roving-tabindex\nkeyboard navigation, and form participation. kit-radio itself is not\nform-associated — this component owns the checked value and validity for\nthe whole group.. Attributes/properties: label (string): Accessible label shown in the fieldset's legend.; name (string): The name of the radio group, used for form submission.; required (boolean): required state of the radio group — at least one radio must be checked.; value (string): The value of the currently checked radio. Setting this externally\nchecks the matching radio and unchecks the others.. Slots: default: kit-radio children. Events: change: .",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-select",
+    "text": "kit-select — A single-choice select built from kit-dropdown (positioning, dismiss,\ndisabled propagation) and slotted kit-option children (the listbox).\nkit-select owns the listbox semantics on top: roving-tabindex keyboard\nnavigation, type-ahead, selection, and form participation.. Attributes/properties: label (string): Accessible label shown above the trigger.; name (string): The name of the select, used for form submission.; placeholder (string): Text shown in the trigger when nothing is selected.; required (boolean): required state of the select — an option must be selected.; disabled (boolean): disabled state of the select.; value (string): The value of the currently selected option. Setting this externally\nselects the matching option and deselects the others.. Slots: default: kit-option children. Events: change: .",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-tab",
+    "text": "kit-tab — A single tab. Not interactive selection logic on its own beyond its own\nclick/keydown — pair it with `kit-tab-group`, which owns mutual\nexclusivity, roving-tabindex keyboard navigation, and orientation for its\nslotted `kit-tab` children.\n\nkit-tab does not manage any associated panel content. Pair each tab with\nits panel elsewhere in the page using a standard `aria-controls` attribute\n(e.g. `<kit-tab aria-controls=\"panel-1\">`) and switch panel visibility\noff the group's `value`/`change` event.. Attributes/properties: selected (boolean): Whether this tab is the selected one in its group.; disabled (boolean): Whether this tab is disabled.; value (string): An identifier for this tab, surfaced as kit-tab-group's `value` when\nthis tab is selected.. Slots: default: The tab's label content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-tab-group",
+    "text": "kit-tab-group — Groups kit-tab children, managing mutual exclusivity and roving-tabindex\nkeyboard navigation. kit-tab-group always keeps exactly one enabled tab\nselected (falling back to the first enabled tab if none is marked\n`selected`), matching the tablist widget's expected behavior — unlike\nkit-radio-group, where \"nothing checked\" is a valid state.\n\nkit-tab-group does not render or manage panel content. Pair each tab with\na panel elsewhere in the page (via `aria-controls` on the tab) and switch\npanel visibility off the `change` event / `value` property.. Attributes/properties: value (string): The value of the currently selected tab. Setting this externally\nselects the matching tab and deselects the others.. Slots: default: kit-tab children. Events: change: .",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  },
+  {
+    "id": "custom-elements.json#kit-tab-panel",
+    "text": "kit-tab-panel — The content panel associated with a `kit-tab`. Not slotted inside\n`kit-tab-group` — pairs with it by id via the `tab-group` attribute\n(the same idea as a native `<label for>`), so a panel can live anywhere\nin the page relative to the tabs that control it.\n\nkit-tab-panel hides itself (via the standard `hidden` attribute)\nwhenever its `value` doesn't match the paired kit-tab-group's current\n`value`, and wires `aria-controls`/`aria-labelledby` between the\nmatching kit-tab and itself automatically — without overwriting either\nif a consumer already set one explicitly.\n\nThe `tab-group` attribute is resolved once, when the panel connects;\nit isn't reactive to being changed afterward.. Attributes/properties: value (string): Identifies which kit-tab this panel belongs to — matched against a\nkit-tab's `value` within the paired group.; tab-group (string): The id of the kit-tab-group this panel is paired with.. Slots: default: The panel's content.",
+    "source": "custom-elements.json",
+    "tag": "component-reference",
+    "audience": "consumer"
+  }
+]
