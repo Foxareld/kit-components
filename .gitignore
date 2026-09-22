@@ -1,3 +1,5 @@
+.env
+
 # Dependencies
 node_modules/
 yarn.lock
@@ -6,6 +8,8 @@ pnpm-lock.yaml
 # Build outputs
 dist/
 *.tsbuildinfo
+chunks.json
+embeddings.json
 
 # Generated style files (built from .css)
 **/*.styles.ts

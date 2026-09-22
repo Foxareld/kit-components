@@ -20,7 +20,13 @@ export type IconColor =
 export type IconSize = 'small' | 'medium' | 'default' | 'large' | 'xlarge';
 
 /**
- * Icon component
+ * Renders a single icon from Kit's built-in SVG icon registry by name.
+ *
+ * Looks up `name` in the icon registry and inlines its SVG markup into the
+ * component's shadow DOM, sized and colored via the `size` and `color`
+ * props. The rendered SVG is marked `aria-hidden`, so icons are treated as
+ * decorative by default — pair with visible or screen-reader text when an
+ * icon conveys meaning on its own (e.g. an icon-only button).
  *
  * @csspart root - The root SVG element
  */

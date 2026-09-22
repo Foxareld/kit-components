@@ -1,4 +1,5 @@
 ## kit-dropdown — disableTrigger vs. a new disabled property
+
 **Tag:** architecture
 **Audience:** consumer
 **Symptom/question:** Wanted a disabled dropdown trigger (e.g. a `kit-button`) to show its own disabled styling. The existing `disableTrigger` property looked like the obvious place to add this, but it only suppresses the automatic click-to-toggle wiring — the trigger stays fully interactive by design, since it exists for cases like a search-input trigger where opening is driven by something else internal to it (a separate icon button), not by clicking the input itself.
@@ -7,6 +8,7 @@
 **Processed:** yes
 
 ## kit-dropdown — forcing open=false on disable without a double render
+
 **Tag:** forms
 **Audience:** internal
 **Symptom/question:** When `disabled` becomes true while the dropdown is open, it needs to close. Setting `this.open = false` as a side effect inside `updated()` works, but mutating a reactive property inside `updated()` schedules a second, visible update cycle (Lit's "change-in-update" warning) — this repo's CLAUDE.md specifically calls this out as a bug pattern to avoid.
@@ -15,6 +17,7 @@
 **Processed:** yes
 
 ## Form-associated components — compute validity in willUpdate(), not updated()
+
 **Tag:** forms
 **Audience:** internal
 **Symptom/question:** `kit-input` originally computed/mirrored its validity state in `updated()`. Since `updated()` runs after the DOM is already committed, mutating anything there just schedules a second update instead of showing up in the current one — the invalid-state UI (error text, error styling) lagged a full cycle behind the change that caused it. Worse, the resulting repeating "change-in-update" cascade combined badly with mocha's fixture teardown and hung Web Test Runner indefinitely rather than just failing a test — this cost real debugging time before the actual cause (wrong lifecycle hook) was found.
@@ -23,6 +26,7 @@
 **Processed:** yes
 
 ## Form-associated components — public validity-mutating methods must call requestUpdate()
+
 **Tag:** forms
 **Audience:** internal
 **Symptom/question:** Even after fixing the `willUpdate()` cascade above, `setCustomValidity()` and other methods that mutate `ElementInternals` directly still seemed to intermittently fail to update the DOM. `checkValidity()` reflected the change correctly, but the invalid-state UI didn't repaint. It "worked" in isolated tests only because an unrelated property change happened to be triggering a render at the same time, and silently failed the moment a form called `setCustomValidity()` a second time with nothing else changing.
@@ -31,6 +35,7 @@
 **Processed:** yes
 
 ## kit-select — slotted kit-option children vs. a data-driven options array
+
 **Tag:** architecture
 **Audience:** consumer
 **Symptom/question:** The design system's own spec (a React recreation) takes `options={[...]}` as a prop. That shape doesn't translate cleanly to a framework-agnostic web component — a plain JS array can't be set declaratively from an HTML attribute, only via a JS property binding.
@@ -39,6 +44,7 @@
 **Processed:** yes
 
 ## kit-select — no built-in filtering/type-to-search
+
 **Tag:** architecture
 **Audience:** consumer
 **Symptom/question:** An editable-combobox mode with as-you-type filtering was a real option to build, but the Kit design system's own spec for Select draws a simple non-editable button-triggered listbox — it doesn't call for filtering at all.
@@ -47,6 +53,7 @@
 **Processed:** yes
 
 ## kit-select — getUpdateComplete() must await kit-dropdown's own update cycle
+
 **Tag:** forms
 **Audience:** internal
 **Symptom/question:** `select.test.ts` hung the whole file indefinitely (no test even reported a result) the same way `dropdown.test.ts` once did. Root cause: `kit-select` closes its internal `kit-dropdown` by setting `dropdownEl.open = false`, which schedules a Lit update on `kit-dropdown` — a separate custom element with its own independent update cycle. `await selectEl.updateComplete` only waits for `kit-select`'s own update, not its child's, so a test could observe `document.activeElement` before `kit-dropdown`'s own close/focus-return logic had actually run. That race then broke the next test's fixture teardown, producing the hang.
@@ -86,7 +93,7 @@
 **Tag:** accessibility
 **Audience:** consumer
 **Symptom/question:** `kit-radio-group` has no Home/End support. The WAI-ARIA APG tabs pattern (unlike the radio pattern as Kit implements it) specifies Home/End to jump to the first/last tab as part of the tablist widget's expected keyboard support.
-**Decision:** Added Home/End handling to `kit-tab-group`'s keydown handler (jumps to the first/last *enabled* tab).
+**Decision:** Added Home/End handling to `kit-tab-group`'s keydown handler (jumps to the first/last _enabled_ tab).
 **Why:** This is spec-required behavior for the tablist widget specifically, not a gap being carried over for consistency's sake, and cheap to support once arrow-key navigation already exists. (An `orientation` property/vertical layout was also prototyped alongside this but deliberately cut — see below.)
 **Processed:** yes
 
@@ -199,7 +206,7 @@
 **Decision:** Built `kit-heading` as its own component — `level` (1–6, clamped) picks a real, literal `hN` tag (never `role="heading"`); `size` (`sm`/`base`/`lg`/`xl`) is the independent visual override, defaulting to a level-derived value (1→xl, 2→lg, 3–4→base, 5–6→sm) rather than fs-heading's fixed `type: 'display'` default regardless of `as`. `kit-accordion-item`'s old role=heading div was replaced with a real `<kit-heading>` wrapping the trigger button.
 **Why:** Real semantic heading elements are more broadly and reliably understood by assistive tech than `role="heading"` emulation, so once a dedicated component existed there was no reason to keep the ARIA-role stand-in. Deriving the default `size` from `level` (rather than fs-heading's single fixed default) means the common case — no explicit visual override — still looks like a heading at every level out of the box, instead of requiring a consumer to set two props together to get a sane result. Kit's own design system has no heading type scale yet (`design-reference/tokens/typography.css` only defines `--font-size-sm/base/lg/xl`, no display/title steps), so `size` maps onto those 4 existing tokens rather than porting fs-heading's 7-step scale — nothing to port from a design system that doesn't spec this component yet.
 
-## kit-heading — hardcoded font-weight, not a --font-weight-* token
+## kit-heading — hardcoded font-weight, not a --font-weight-\* token
 
 **Tag:** theming
 **Audience:** internal
@@ -223,10 +230,18 @@
 **Decision:** `kit-accordion` gained its own `heading-level` property (default 3). On first render and on any subsequent change (including new items slotted in later), it overwrites every child item's `heading-level` unconditionally.
 **Why:** Every item in a given accordion instance is virtually always at the same outline depth in practice, so requiring a consumer to repeat `heading-level` on every single item is pure boilerplate for the common case. Chose unconditional overwrite (not "only fill in if the item didn't set its own") to keep the contract simple and match the precedent set by `kit-tab-group`'s `_applyValueToTabs()`-style broadcast, rather than adding a per-item-override escape hatch nothing has asked for yet.
 
-## kit-heading — size scale ported from the predecessor's --heading-* tokens, not the general --font-size-* scale
+## kit-heading — size scale ported from the predecessor's --heading-_ tokens, not the general --font-size-_ scale
 
 **Tag:** theming
 **Audience:** consumer
 **Symptom/question:** `kit-heading` originally reused Kit's existing 4-step `--font-size-sm/base/lg/xl` scale for its `size` prop, since that was the only font-size scale in `variables.css` at the time. That only gave 6 heading levels 4 distinct sizes (levels 3–4 and 5–6 each collapsed onto the same value). The user explicitly asked to use the predecessor component library's own font sizes instead, pointing at `packages/web-components/src/assets/index.css`, which has a dedicated 7-step `--heading-display`/`--heading-title1`–`title6` scale (each paired with its own `-leading` line-height) — exactly the same category names `fs-heading`'s own `type` prop used.
 **Decision:** Ported that scale into `src/styles/variables.css` as its own `--heading-*` token namespace (converted px → rem, kept the predecessor's naming), separate from `--font-size-*`. `kit-heading`'s `size` union changed to `'display' | 'title1'..'title6'`, defaulting to `titleN` for the matching level (no more collapsing) — `display` is the one step nothing defaults to, opt-in only, for hero/marquee text bigger than any level's own default.
-**Why:** This repo's usual default is to re-derive against Kit's own tokens rather than port predecessor literals verbatim — the instruction here was an explicit, knowing exception to that default made for this one case, not a general license to start porting fs-* values elsewhere. Kept `--heading-*` as its own namespace rather than folding these into `--font-size-*`: the two scales serve different things (body/UI text like button labels and error text vs. heading sizes specifically), and conflating them would force every `--font-size-*` consumer to wade through heading-sized options irrelevant to them. Carried the paired `-leading` line-height values along with the sizes, not just the raw font-size numbers — they're bundled together in the source for a reason (a 36px heading needs different line-height than a 14px one to read well), and dropping them would've left the ported scale visually worse than the source it came from.
+**Why:** This repo's usual default is to re-derive against Kit's own tokens rather than port predecessor literals verbatim — the instruction here was an explicit, knowing exception to that default made for this one case, not a general license to start porting fs-_ values elsewhere. Kept `--heading-_`as its own namespace rather than folding these into`--font-size-_`: the two scales serve different things (body/UI text like button labels and error text vs. heading sizes specifically), and conflating them would force every `--font-size-_`consumer to wade through heading-sized options irrelevant to them. Carried the paired`-leading` line-height values along with the sizes, not just the raw font-size numbers — they're bundled together in the source for a reason (a 36px heading needs different line-height than a 14px one to read well), and dropping them would've left the ported scale visually worse than the source it came from.
+
+## Embeddings index generated locally, not committed
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** embeddings.json will grow with the corpus and gets regenerated any time docs or components change, a git-tracked copy would produce large, unreadable diffs on every run.
+**Decision:** chunks.json and embeddings.json are gitignored. embeddings.json gets uploaded directly to S3 for the Lambda to load, not shipped through git or the Storybook build.
+**Why:** both files are fully reproducible from source (docs, custom-elements.json, and one API call), so there's nothing lost by not versioning them, and it keeps the repo's history clean.

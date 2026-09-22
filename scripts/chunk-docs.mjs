@@ -14,7 +14,7 @@ const SKIP_FILES = new Set(['decisions-log.md']);
 
 /** Split one doc's raw text into chunks along '## ' headings. */
 function chunkMarkdownFile(filePath) {
-  const raw = readFileSync(filePath, 'utf8');
+  const raw = readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
   const source = basename(filePath);
 
   // Split keeping the '## ' delimiter with each section.
@@ -29,7 +29,10 @@ function chunkMarkdownFile(filePath) {
     const tag = metaMatch ? metaMatch[1] : 'unknown';
     const audience = metaMatch ? metaMatch[2] : 'unknown';
 
-    const body = section.replace(/<!--\s*tag:.*?-->\n?/i, '').trim();
+    const body = section
+      .replace(/<!--\s*tag:.*?-->\n?/i, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 
     return {
       id: `${source}#${slugify(heading)}`,
@@ -70,7 +73,9 @@ function chunkCustomElements(filePath) {
         props ? `Attributes/properties: ${props}.` : '',
         slots ? `Slots: ${slots}.` : '',
         events ? `Events: ${events}.` : '',
-      ].filter(Boolean);
+      ]
+        .filter(Boolean)
+        .map((s) => s.replace(/\r\n?/g, ' ').replace(/[ \t]{2,}/g, ' '));
 
       chunks.push({
         id: `custom-elements.json#${decl.tagName}`,

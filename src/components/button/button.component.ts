@@ -6,12 +6,17 @@ import { baseStyles } from '../../styles/utilities.js';
 import { buttonStyles } from './button.styles.js';
 
 /**
- * A customizable button component built with Lit
+ * A clickable button for triggering actions or submitting forms.
+ *
+ * Renders a native `<button>` in its shadow DOM, so it inherits standard
+ * button keyboard and focus behavior for free. Supports `primary`,
+ * `secondary`, and `ghost` visual variants, three sizes, and a `full-width`
+ * layout option. Use the `type` prop to make it act as a form submit or
+ * reset control when placed inside a `<form>`.
  *
  * @slot - The button content
  *
  * @csspart button - The button element
-
  */
 @customElement('kit-button')
 export class KitButton extends KitElement {
