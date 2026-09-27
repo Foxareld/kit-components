@@ -149,6 +149,7 @@
 **Symptom/question:** Before starting, considered whether an accordion panel could reuse `kit-tab-panel`'s decoupled-by-id pairing (a panel matched to its trigger by a shared id, so it can live anywhere on the page relative to the thing that controls it).
 **Decision:** `kit-accordion-item` renders its own header and panel together, in one component — no separate panel element, no id-matching.
 **Why:** `kit-tab-panel`'s indirection earns its keep because a tab strip and its single active panel are commonly positionally separate (tabs in a header, panel content lower in the layout), and only one panel is ever visible at once. An accordion item's header and body are always a co-located pair — potentially several open simultaneously — so there's no "lives elsewhere on the page" case to design for, and the id-matching/async-connect machinery would only add indirection for nothing gained.
+**Processed:** yes
 
 ## kit-accordion — multiple items open by default, single-open is opt-in
 
@@ -157,6 +158,7 @@
 **Symptom/question:** The predecessor `fs-accordion` has no group-level coordination at all — every `fs-accordion-item` is fully independent, with no way to make opening one close the others. Whether `kit-accordion` should support that exclusivity at all, and if so whether it should be the default, was a real fork (asked and decided with the user before building).
 **Decision:** Items are open/closed independently by default, matching the predecessor. `kit-accordion` adds an opt-in `single` boolean — when set, opening one item closes every other item in the group, the same mutual exclusivity `kit-tab-group` enforces between tabs.
 **Why:** Multi-open is the more common accordion default and matches the only prior art in this codebase. Making exclusivity opt-in rather than baking in one fixed behavior covers both real use cases (an FAQ list where several answers can be open at once, vs. a space-constrained settings panel where only one section should show at a time) without forcing either shape on every consumer.
+**Processed:** yes
 
 ## kit-accordion-item — role="heading" wrapper with configurable heading-level
 
@@ -165,6 +167,7 @@
 **Symptom/question:** The predecessor `fs-accordion-item` never wraps its header in heading semantics at all — a screen reader user navigating by heading has no way to jump between accordion sections, which the ARIA APG accordion pattern calls for (each header nested in a heading element).
 **Decision:** Added a `heading-level` property (default 3), rendered as a `role="heading"` + `aria-level` wrapper around the header button, rather than a literal `<h3>` (or similar) tag.
 **Why:** The correct heading level depends on where a consumer places the accordion in their own page's heading outline, which a fixed tag name couldn't adapt to — `role="heading"` + `aria-level` gives the same semantics as a real heading tag while staying configurable, and isn't capped at `aria-level="6"` the way literal heading tags are.
+**Processed:** yes
 
 ## kit-accordion-item — closed panel is inert, not just visually collapsed
 
@@ -173,6 +176,7 @@
 **Symptom/question:** The predecessor `fs-accordion-item` tries to keep a closed panel's content out of the tab order by setting `tabindex` on the `<slot>` element itself. That doesn't work — a `<slot>`'s own `tabindex` attribute has no effect on the focusability of the nodes assigned to it, so its collapsed panels stay fully keyboard-reachable (and exposed to assistive tech) despite being visually hidden.
 **Decision:** `kit-accordion-item` applies the `inert` attribute to the panel region while closed.
 **Why:** `inert` genuinely removes everything inside it from both the tab order and the accessibility tree, regardless of what a consumer slots in — no need to walk arbitrary slotted content and set `tabindex` on each focusable descendant by hand. Broadly supported across the browsers this repo tests against (Chromium/Firefox/WebKit via Playwright).
+**Processed:** yes
 
 ## kit-accordion-item — dispatches 'change', not 'toggle'
 
@@ -181,6 +185,7 @@
 **Symptom/question:** The obvious name for the item's own state-change event was `toggle`. TypeScript's DOM lib defines a global `ToggleEvent` type for the native `toggle` event (fired by `<details>` and the Popover API) and maps it in `HTMLElementEventMap`, so `addEventListener('toggle', ...)` resolves to `ToggleEvent` rather than `Event`/`CustomEvent` — `event.detail` doesn't exist on it, and TypeScript flagged even this repo's own test code as an unsafe cast.
 **Decision:** Renamed the event to `change`, matching `kit-tab-group`/`kit-radio-group`'s existing convention, with `detail: { open, value }`.
 **Why:** Keeping `toggle` would have pushed the same unsafe-cast problem onto every consumer listening in TypeScript, not just this repo's tests. `change` sidesteps the native-type collision entirely and stays consistent with how every other grouped/stateful Kit component already names its state-change event.
+**Processed:** yes
 
 ## kit-accordion-item — panel padding lives on a nested part, not the overflow:hidden element
 
@@ -189,6 +194,7 @@
 **Symptom/question:** Built the collapse/expand animation with a CSS grid `0fr`/`1fr` trick on `[part='panel']`, originally with `overflow: hidden` and the panel's padding both on the same element (`[part='panel-inner']`, the grid item). A closed item still rendered with a visible sliver of height and content, exactly equal to its padding-bottom — caught visually testing in Storybook (a "single open" story showed every closed panel's text peeking through), not by the automated tests, which never asserted a pixel height.
 **Decision:** Split the grid item into two layers: the outer one (`[part='panel-inner']`) keeps only `overflow: hidden` and `min-height: 0`, and a new inner `[part='content']` carries the padding.
 **Why:** A grid item's padding is part of its own generated box and contributes to the row's automatic minimum size regardless of `overflow: hidden` — only content can be clipped away by overflow, not the box's own padding. Moving the padding one level deeper, inside the clipped element rather than on it, lets the outer box's intrinsic size actually reach zero so the `0fr` track collapses fully, while `overflow: hidden` on the parent still visually hides the now off-flow inner content. `min-height: 0` on the outer layer was also required, since a grid item's default `min-height: auto` otherwise floors it at its min-content size independent of the row's track size.
+**Processed:** yes
 
 ## kit-accordion-item — real <button> per header, no roving tabindex across items
 
@@ -197,6 +203,7 @@
 **Symptom/question:** `kit-tab-group`'s established pattern (shared by `kit-tab` and `kit-radio-group`'s `kit-radio`) is a single Tab stop for the whole group, with roving tabindex and manual keydown-based activation on a `role="tab"`/`role="radio"` element. Accordion headers don't share that shape — the ARIA APG accordion pattern expects every header to remain its own Tab stop, with arrow keys only moving focus (never roving tabindex) and Home/End jumping to the ends.
 **Decision:** `kit-accordion-item` renders a real native `<button>` for its header — getting focus, native `disabled` semantics, and Enter/Space activation for free — instead of a `role="tab"`-style element with manually-managed tabindex/keydown handling. `kit-accordion`'s own keydown handler only moves focus on arrow keys/Home/End; it never touches any item's tabindex.
 **Why:** A native button is simpler and more correct here, since accordion doesn't need — and per APG shouldn't have — the single-Tab-stop composite-widget behavior that makes roving tabindex necessary for tabs and radios. Copying `kit-tab-group`'s roving-tabindex shape anyway would have made every header but one unreachable via Tab, which is wrong specifically for accordions.
+**Processed:** yes
 
 ## kit-heading — new component, extracted from kit-accordion-item's one-off heading wrapper
 
@@ -205,6 +212,7 @@
 **Symptom/question:** `kit-accordion-item` originally solved its own heading semantics inline (a `role="heading"`/`aria-level` div). The user didn't want that solved one-off and asked for a reusable heading component instead, pointing at the predecessor's `fs-heading` as prior art: it decouples the semantic tag (`as`, real `h1`–`h6` or `div`, via `lit/static-html`) from a visual style variant (`type`: display/title1–6).
 **Decision:** Built `kit-heading` as its own component — `level` (1–6, clamped) picks a real, literal `hN` tag (never `role="heading"`); `size` (`sm`/`base`/`lg`/`xl`) is the independent visual override, defaulting to a level-derived value (1→xl, 2→lg, 3–4→base, 5–6→sm) rather than fs-heading's fixed `type: 'display'` default regardless of `as`. `kit-accordion-item`'s old role=heading div was replaced with a real `<kit-heading>` wrapping the trigger button.
 **Why:** Real semantic heading elements are more broadly and reliably understood by assistive tech than `role="heading"` emulation, so once a dedicated component existed there was no reason to keep the ARIA-role stand-in. Deriving the default `size` from `level` (rather than fs-heading's single fixed default) means the common case — no explicit visual override — still looks like a heading at every level out of the box, instead of requiring a consumer to set two props together to get a sane result. Kit's own design system has no heading type scale yet (`design-reference/tokens/typography.css` only defines `--font-size-sm/base/lg/xl`, no display/title steps), so `size` maps onto those 4 existing tokens rather than porting fs-heading's 7-step scale — nothing to port from a design system that doesn't spec this component yet.
+**Processed:** yes
 
 ## kit-heading — hardcoded font-weight, not a --font-weight-\* token
 
@@ -213,6 +221,7 @@
 **Symptom/question:** The design system's exported `design-reference/tokens/typography.css` documents `--font-weight-regular`/`--font-weight-medium` custom properties. Went to use `--font-weight-medium` for heading text, but neither token actually exists in the shipped `src/styles/variables.css` — every existing component that needs a heavier weight (`kit-tab`'s selected state, `kit-radio-group`'s legend) hardcodes a raw number instead.
 **Decision:** `kit-heading` hardcodes `font-weight: 600`, matching the rest of the library's existing convention, instead of referencing a custom property that doesn't exist in this codebase yet.
 **Why:** Referencing an undefined custom property fails silently (the declaration is just dropped, no error), which would have been a quiet bug. Introducing the real tokens into `variables.css` to close this gap felt like its own separate, broader change (a typography-token migration affecting every component with a hardcoded weight) rather than something to take on as a side effect of building one new component.
+**Processed:** yes
 
 ## kit-accordion-item — button uses font-size/font-weight: inherit, not its own hardcoded values
 
@@ -221,6 +230,7 @@
 **Symptom/question:** After wrapping the trigger `<button>` in `<kit-heading>`, the button still visually ignored whatever level/size `kit-heading` resolved to — the accordion header text stayed the same size regardless of `heading-level`. Cause: the button already had its own hardcoded `font-size: var(--font-size-base)` (from before `kit-heading` existed), which simply overrode whatever the wrapping `hN` element's CSS specified.
 **Decision:** Changed the button's `font-size` and `font-weight` to `inherit`, letting them cascade from `kit-heading`'s internal `hN` element through slot assignment (inherited CSS properties flow through the flattened/rendered tree, not the light-DOM tree, so a slotted button does pick up its slot parent's font styles once nothing on the button itself overrides them).
 **Why:** The entire point of threading `heading-level` through the accordion is for it to visibly change the rendered size — a hardcoded value on the slotted button silently defeated that. This is easy to reintroduce by accident (any future hardcoded `font-size`/`font-weight` on slotted content inside a `kit-heading` will silently win over the heading's own styling), worth knowing going in rather than re-debugging.
+**Processed:** yes
 
 ## kit-accordion — heading-level lives on the group, cascades to items
 
@@ -229,6 +239,7 @@
 **Symptom/question:** With `kit-heading` in place, `kit-accordion-item` still had its own per-item `heading-level` property. Whether `kit-accordion` should get a matching group-level property that pushes down to every item, versus leaving it purely per-item, was a real fork (asked and decided with the user).
 **Decision:** `kit-accordion` gained its own `heading-level` property (default 3). On first render and on any subsequent change (including new items slotted in later), it overwrites every child item's `heading-level` unconditionally.
 **Why:** Every item in a given accordion instance is virtually always at the same outline depth in practice, so requiring a consumer to repeat `heading-level` on every single item is pure boilerplate for the common case. Chose unconditional overwrite (not "only fill in if the item didn't set its own") to keep the contract simple and match the precedent set by `kit-tab-group`'s `_applyValueToTabs()`-style broadcast, rather than adding a per-item-override escape hatch nothing has asked for yet.
+**Processed:** yes
 
 ## kit-heading — size scale ported from the predecessor's --heading-_ tokens, not the general --font-size-_ scale
 
@@ -237,6 +248,7 @@
 **Symptom/question:** `kit-heading` originally reused Kit's existing 4-step `--font-size-sm/base/lg/xl` scale for its `size` prop, since that was the only font-size scale in `variables.css` at the time. That only gave 6 heading levels 4 distinct sizes (levels 3–4 and 5–6 each collapsed onto the same value). The user explicitly asked to use the predecessor component library's own font sizes instead, pointing at `packages/web-components/src/assets/index.css`, which has a dedicated 7-step `--heading-display`/`--heading-title1`–`title6` scale (each paired with its own `-leading` line-height) — exactly the same category names `fs-heading`'s own `type` prop used.
 **Decision:** Ported that scale into `src/styles/variables.css` as its own `--heading-*` token namespace (converted px → rem, kept the predecessor's naming), separate from `--font-size-*`. `kit-heading`'s `size` union changed to `'display' | 'title1'..'title6'`, defaulting to `titleN` for the matching level (no more collapsing) — `display` is the one step nothing defaults to, opt-in only, for hero/marquee text bigger than any level's own default.
 **Why:** This repo's usual default is to re-derive against Kit's own tokens rather than port predecessor literals verbatim — the instruction here was an explicit, knowing exception to that default made for this one case, not a general license to start porting fs-_ values elsewhere. Kept `--heading-_`as its own namespace rather than folding these into`--font-size-_`: the two scales serve different things (body/UI text like button labels and error text vs. heading sizes specifically), and conflating them would force every `--font-size-_`consumer to wade through heading-sized options irrelevant to them. Carried the paired`-leading` line-height values along with the sizes, not just the raw font-size numbers — they're bundled together in the source for a reason (a 36px heading needs different line-height than a 14px one to read well), and dropping them would've left the ported scale visually worse than the source it came from.
+**Processed:** yes
 
 ## Embeddings index generated locally, not committed
 
@@ -245,3 +257,94 @@
 **Symptom/question:** embeddings.json will grow with the corpus and gets regenerated any time docs or components change, a git-tracked copy would produce large, unreadable diffs on every run.
 **Decision:** chunks.json and embeddings.json are gitignored. embeddings.json gets uploaded directly to S3 for the Lambda to load, not shipped through git or the Storybook build.
 **Why:** both files are fully reproducible from source (docs, custom-elements.json, and one API call), so there's nothing lost by not versioning them, and it keeps the repo's history clean.
+**Processed:** yes
+
+## Lambda timeout raised from default 3s to 30s
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** First test invocation of the RAG chatbot Lambda failed with `Sandbox.Timedout` after exactly 3 seconds. Logs showed the S3 embeddings load succeeding, then nothing, the function died mid-request rather than erroring cleanly.
+**Decision:** Raised the function's timeout from AWS's default 3 seconds to 30 seconds (Configuration → General configuration). Also bumped memory from 128 MB to 256 MB, since Lambda ties CPU allocation to memory and the function does real work (JSON parsing, similarity math) in addition to waiting on network calls.
+**Why:** The handler makes two sequential external API calls, one to OpenAI for the question's embedding, one to Claude for the actual answer, on top of the S3 load. That's comfortably more than 3 seconds end to end, especially on a cold start. 3 seconds is a reasonable default for a single quick operation, but was never going to be enough for a function chaining multiple network calls together.
+**Processed:** yes
+
+## RAG chat test page — lives outside the Storybook build, so it isn't deployed automatically
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** Stage 1 of the docs chat widget needed a throwaway page for testing against the real `/ask` endpoint. That endpoint's CORS only allows the CloudFront origin, so the page can only be tested for real once it's served from there, but `storybook build` only emits what's under `storybook-static/` (stories plus any `staticDirs`, of which there are none).
+**Decision:** Put it at `docs-site/chat-test.html`, a standalone file with no build step, and upload it to the bucket by hand next to the Storybook build for the real test. Did not add `docs-site/` as a Storybook `staticDirs` entry.
+**Why:** Wiring it into `staticDirs` would ship scaffolding with every Storybook deploy and leave it there after the real widget replaces it. A manual one-file upload is cheap and easy to delete afterward. Local runs from `file://` or `localhost` always hit the error state, which is expected.
+**Processed:** yes
+
+## RAG chat test page — CORS rejections can't be told apart from network failures
+
+**Tag:** other
+**Audience:** internal
+**Symptom/question:** Whether the error state could say "blocked by CORS" when the page runs from the wrong origin.
+**Decision:** A rejected `fetch()` shows one generic "could not reach" message. A non-2xx response shows its HTTP status. A 2xx response whose body won't parse as JSON gets its own message. The answer is rendered with `textContent`, never `innerHTML`.
+**Why:** The browser deliberately hides the CORS failure reason from script. It surfaces as the same opaque `TypeError` as a dropped connection (the reason only appears in devtools), so the page has nothing to branch on. The answer is LLM output that could contain HTML-like text, and a stubbed answer containing `<b>` rendered as escaped text, as intended.
+**Processed:** yes
+
+## kit-button / kit-input — type="submit" and Enter don't submit a surrounding form
+
+**Tag:** forms
+**Audience:** consumer
+**Symptom/question:** Swapping `kit-input` and `kit-button type="submit"` into the chat test page inside a `<form>`, neither clicking the button nor pressing Enter in the input submitted it. No `submit` event fired. Confirmed with real clicks and keypresses, not just `dispatchEvent`.
+**Decision:** The chat page calls `form.requestSubmit()` itself from the button's `click` and the input's Enter `keydown`. The components themselves weren't changed; this is flagged as a library bug to fix separately.
+**Why:** Both render their native `<button>`/`<input>` inside shadow DOM, where `.form` is `null`, so the browser's submit-button activation and implicit submission never reach the light-DOM form. `kit-input` itself is form-associated (`kit-input.form` is correct), but implicit submission is driven by the native control, not the host. `kit-button` isn't form-associated at all, so its `type` prop only changes the inner button's attribute and has no effect on a form. Fixing it properly (making `kit-button` form-associated and routing `submit`/`reset` through `ElementInternals.form`, plus Enter handling in `kit-input`) is component work outside this frontend-only task.
+**Processed:** yes
+
+## Theme variables are a separate CSS file, not injected by the JS
+
+**Tag:** theming
+**Audience:** consumer
+**Symptom/question:** CLAUDE.md says the CSS custom properties are "auto-injected at `:root` when any component is imported." Bundling `src/index.ts` with esbuild for the chat test page emitted `variables.css` as a separate `kit.css`, and nothing in `kit.js` adds it to the page. `dist/` works the same way (`dist/index.css`).
+**Decision:** The chat test page links `kit.css` explicitly. The mismatch between the docs and the build is flagged, not fixed.
+**Why:** `import './styles/variables.css'` is a side-effect import that only "auto-injects" when the consumer's bundler handles CSS imports (Vite does, which is why Storybook looks fine). For a plain `<script>` consumer, or esbuild's default CSS handling, it becomes a separate file the consumer has to link. Components still render because every token has a fallback in the component CSS, but anything outside the components, like page styles using `var(--color-danger)`, silently gets no value.
+**Processed:** yes
+
+## RAG chat test page (Kit version) — bundle Kit with a local esbuild script, not publish the package
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** The stage 2 standalone page needs Kit in a plain HTML file. `dist/` leaves `lit` as a bare import (`packages: 'external'`), and the package isn't published, so no CDN or `<script>` tag can load it. Publishing the package, or moving stage 2 into a Storybook story, were both considered.
+**Decision:** `docs-site/build-chat-test.mjs` bundles `src/index.ts` plus Lit into a self-contained `kit.js` + `kit.css` next to the page (gitignored). Test by uploading all three files to CloudFront.
+**Why:** Publishing means picking a real package name/scope (still the `@yourorg/kit` placeholder), accepting npm's unpublish limits, and still needing an import-rewriting CDN for Lit. Those are real decisions a throwaway page shouldn't force, and the stage 3 Storybook panel gets Kit from source anyway. A story would have abandoned the standalone-page plan for stage 2. The script is the smallest thing that works and gets deleted with the page.
+**Processed:** yes
+
+## Docs chat addon — manager API import is `storybook/manager-api`, not `@storybook/manager-api`
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** The stage 3 spec named `@storybook/manager-api`, but that package isn't installed on Storybook 10.6. Storybook 9 folded the separate `@storybook/*` addon APIs into the main `storybook` package.
+**Decision:** `.storybook/manager.tsx` imports `addons`/`types` from `storybook/manager-api` and `AddonPanel` from `storybook/internal/components`, per the current addon-types docs (panel = `addons.add(id, { type: types.PANEL, title, render: ({ active }) => <AddonPanel active={active}>…</AddonPanel> })`).
+**Why:** Confirmed against the installed package's `exports` map and Storybook's own addon docs rather than older examples, which still show the `@storybook/` paths.
+**Processed:** yes
+
+## Docs chat addon — Kit is pre-compiled for the manager because Storybook's manager esbuild ignores our tsconfig
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** Importing Kit components straight from `src/` into `.storybook/manager.tsx` crashed the manager entry at load with `Unsupported decorator location: field`. Storybook builds the manager with its own esbuild call and hard-codes its own `addon.tsconfig.json` (JSX settings only). Our `experimentalDecorators` / `useDefineForClassFields: false` never apply, so esbuild compiled Lit's `@property` fields as standard decorators, which Lit rejects on plain fields. Storybook exposes no preset hook to change that config.
+**Decision:** `.storybook/docs-chat/build-kit.mjs` bundles just `kit-input`/`kit-button`/`kit-icon` with our own `tsconfig.json` into `kit.generated.js` (gitignored), which the panel imports. It runs automatically via `prestorybook`/`prebuild-storybook` npm hooks, so both local dev and the deploy workflow (`npm run build-storybook`) get it with no workflow change. Theme tokens (`variables.css`) are imported directly, since the manager builder does emit and link imported CSS.
+**Why:** Rejected importing `dist/`: it only exists after a full `npm run build` (including `tsc` declarations), which neither `npm run storybook` nor the deploy workflow runs. Rejected embedding a preview-side story in an iframe inside the panel: that means a second full preview runtime just to host one form. Tradeoff: the manager is built once at startup and doesn't watch, so edits to the panel or to those three components need a Storybook restart to show up in the panel.
+**Processed:** yes
+
+## Docs chat addon — the manager runs Storybook's bundled React 18, not the project's React 19
+
+**Tag:** architecture
+**Audience:** internal
+**Symptom/question:** The repo has React 19 installed, which handles custom elements properly, but the panel renders inside the manager, which uses Storybook's own bundled React (18.3.1 on Storybook 10.6). React 18 sets every prop on a custom element as a string attribute, so `disabled={false}` becomes `disabled="false"`, which Lit's Boolean converter reads as `true`.
+**Decision:** The panel passes `disabled={loading || undefined}` so the attribute is removed rather than set to `"false"`, reads the question from `kit-input` through a ref at submit time instead of mirroring it into React state, and relies only on bubbling native events (`onClick`, `onKeyDown`), which React 18's synthetic system catches fine on custom elements.
+**Why:** Verified the disabled attribute is removed after loading finishes. Checked the manager's actual React version rather than assuming the project's, since that's what determines custom-element behavior here.
+**Processed:** yes
+
+## kit-input — typed text turns white under an inherited dark color-scheme
+
+**Tag:** theming
+**Audience:** consumer
+**Symptom/question:** In the docs chat panel, text typed into `kit-input` rendered white on the input's light grey focus background. Storybook's manager sets `color-scheme: light dark`, which is inherited through shadow DOM. With the OS in dark mode, the native `<input>`'s default text color (`fieldtext`) flips to white, but Kit's field background comes from its light-only tokens. `kit-input` never sets its own text `color`, so it inherits whatever the page's color-scheme implies. Any consumer page with `color-scheme: dark` or `light dark` will hit this.
+**Decision:** The panel pins `color-scheme: light` and paints its own `--color-white` background, rather than following Storybook's possibly-dark manager theme. `kit-input` itself wasn't changed; flagged as a library fix (set an explicit text color token on the field).
+**Why:** Overriding Kit's text tokens for a dark panel doesn't work: `--color-text-secondary` colors both the label (on the page background) and text inside the white field, so no single value reads correctly on both. A light surface matches what Kit's tokens are designed for, and matches the white story canvas right above the panel.
+**Processed:** yes
