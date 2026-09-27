@@ -6,6 +6,12 @@
 			"runtimeExecutable": "npm",
 			"runtimeArgs": ["run", "storybook"],
 			"port": 6006
+		},
+		{
+			"name": "storybook-static",
+			"runtimeExecutable": "npx",
+			"runtimeArgs": ["wds", "--root-dir", "storybook-static", "--port", "8124"],
+			"port": 8124
 		}
 	]
 }

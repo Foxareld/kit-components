@@ -54,3 +54,6 @@ design-reference/
 
 # Personal, machine-local Claude Code instructions (not shared with the team)
 CLAUDE.local.md
+
+# Pre-built Kit components for the Storybook docs chat panel (manager bundle)
+.storybook/docs-chat/kit.generated.js
