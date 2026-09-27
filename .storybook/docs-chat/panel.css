@@ -1,0 +1,47 @@
+/* Kit's tokens assume a light surface (the same token colors both page text and
+   text inside white inputs), so the panel paints its own light background rather
+   than following Storybook's manager theme, which may be dark. color-scheme is
+   pinned too: Storybook's inherited `light dark` would otherwise turn the native
+   input's text white on a dark OS setting, against Kit's light field. */
+.kit-docs-chat {
+	color-scheme: light;
+	box-sizing: border-box;
+	min-height: 100%;
+	background: var(--color-white);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--spacing-sm);
+	padding: var(--spacing-md);
+	font-family: var(--font-family);
+	line-height: var(--line-height);
+	color: var(--color-text);
+}
+
+.kit-docs-chat kit-input {
+	width: 100%;
+}
+
+.kit-docs-chat .status {
+	font-style: italic;
+}
+
+.kit-docs-chat .status.error {
+	font-style: normal;
+	color: var(--color-danger);
+}
+
+.kit-docs-chat .answer {
+	white-space: pre-wrap;
+}
+
+.kit-docs-chat .sources {
+	margin-top: var(--spacing-md);
+	font-size: var(--font-size-sm);
+	color: var(--color-text-secondary);
+}
+
+.kit-docs-chat .sources ul {
+	margin: var(--spacing-xs) 0 0;
+	padding-left: var(--spacing-lg);
+}
