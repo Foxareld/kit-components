@@ -348,3 +348,11 @@
 **Decision:** The panel pins `color-scheme: light` and paints its own `--color-white` background, rather than following Storybook's possibly-dark manager theme. `kit-input` itself wasn't changed; flagged as a library fix (set an explicit text color token on the field).
 **Why:** Overriding Kit's text tokens for a dark panel doesn't work: `--color-text-secondary` colors both the label (on the page background) and text inside the white field, so no single value reads correctly on both. A light surface matches what Kit's tokens are designed for, and matches the white story canvas right above the panel.
 **Processed:** yes
+
+## kit-button — ghost and secondary hover colors ignored theme overrides
+
+**Tag:** theming
+**Audience:** consumer
+**Symptom/question:** A consumer overriding `--color-primary` (e.g. to green) still got an orange tint on ghost-button hover, because it was hardcoded as `rgba(252, 142, 60, 0.1)`. Secondary hover hardcoded `color: white`, which also had poor contrast on the default light peach `--color-secondary`.
+**Decision:** Ghost hover is now `color-mix(in srgb, var(--color-primary) 10%, transparent)`, and secondary hover text uses `var(--color-text)`, the same as primary. The ghost fallback color was also corrected from a stray `#0062ff` to `#fc8e3c`.
+**Why:** Deriving the tint from the token means one override themes every state. The build's CSS transform emits a static orange `color-mix` fallback plus an `@supports` block holding the `var()` version, so browsers without `color-mix()` support still show the default orange tint on hover regardless of theme. That's acceptable at current browser support. For secondary text, we considered a new `--color-on-secondary` token but rejected it in favor of matching primary's existing pattern. Visible change: secondary hover text is now dark, not white.
