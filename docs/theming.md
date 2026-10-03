@@ -31,3 +31,11 @@ Components still render correctly either way, because every token has a fallback
 If your page sets `color-scheme: dark` or `light dark`, typed text in `kit-input` can render white on the input's light grey focus background, effectively invisible. `color-scheme` inherits through shadow DOM, and in dark mode the native `<input>`'s default text color (`fieldtext`) flips to white — but Kit's field background comes from its light-only tokens, and `kit-input` never sets its own text `color`, so it inherits whatever the page's color-scheme implies.
 
 Until `kit-input` sets an explicit text color token on the field (flagged as a library fix), work around it by pinning `color-scheme: light` on the surface hosting the input, and painting your own light background behind it, rather than letting a dark page theme apply. Overriding Kit's text tokens instead doesn't work: a property like `--color-text-secondary` colors both the label (on the page background) and text inside the white field, so no single value reads correctly on both — a light surface matches what Kit's tokens are actually designed for.
+
+## "I overrode `--color-primary` on `kit-button`, but the ghost hover is still orange"
+
+<!-- tag: theming, audience: consumer -->
+
+Overriding `--color-primary` (to green, say) still left an orange tint on ghost-button hover, because the tint was hardcoded as `rgba(252, 142, 60, 0.1)`. Secondary hover also hardcoded `color: white`, which had poor contrast against the default light peach `--color-secondary`.
+
+Ghost hover is now `color-mix(in srgb, var(--color-primary) 10%, transparent)`, and secondary hover text uses `var(--color-text)`, the same as primary, so secondary hover text is now dark rather than white. The ghost fallback color was also corrected from a stray `#0062ff` to `#fc8e3c`. Deriving the tint from the token means one override themes every state. The build's CSS transform emits a static orange `color-mix` fallback plus an `@supports` block holding the `var()` version, so browsers without `color-mix()` support still show the default orange tint on hover regardless of theme, which is acceptable at current browser support. A new `--color-on-secondary` token was considered for the secondary text and rejected in favor of matching primary's existing pattern.
